@@ -1,0 +1,1166 @@
+<?php
+// Luôn bắt đầu session ở dòng đầu tiên
+// SỬA LỖI: Chỉ gọi session_start nếu chưa có session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gói tập - DFC Gym</title>
+  <meta name="description" content="Khám phá các gói tập linh hoạt tại DFC Gym">
+  <link rel="icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="shortcut icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="apple-touch-icon" href="../../assets/img/logo.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries" onerror="console.error('Tailwind CDN failed to load'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/lib/index.min.js';"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/packages.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/packages-inline.css">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#22c55e",
+            "primary-dark": "#16a34a",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102213",
+          },
+          fontFamily: {
+            "display": ["Lexend", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    };
+  </script>
+</head>
+
+<body data-logged-in="<?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>" class="dark bg-background-dark font-display text-gray-300 antialiased">
+
+  <?php if (isset($_SESSION['user'])): ?>
+    <!-- Header Desktop cho người đã đăng nhập - chỉ hiển thị trên PC -->
+    <header class="hidden lg:flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+        <h2 class="nameweb text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <nav class="flex items-center gap-9">
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../../index.html">Trang chủ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="packages.html">Gói tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../lichtap/schedule.html">Lịch tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../hotro/support.html">Hỗ trợ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../danhgia/review.html">Đánh giá</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <span class="text-white/80 text-sm font-medium">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</span>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em]">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper relative">
+          <button class="user-icon-button p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10" id="user-menu-button">
+            <i class="fas fa-user-circle text-xl"></i>
+          </button>
+          <div class="user-dropdown hidden absolute top-full right-0 mt-2 bg-background-dark border border-white/10 rounded-lg shadow-lg min-w-[200px] z-50" id="user-dropdown-menu">
+            <a href="#profile" data-modal-target="profile-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-user-edit mr-2"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-inbox mr-2"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-box mr-2"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-history mr-2"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-credit-card mr-2"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-key mr-2"></i> Đổi mật khẩu</a>
+            <a href="../getset/logout.php" class="block px-4 py-2 text-red-400 hover:text-red-300 hover:bg-white/10"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Mobile Header với Logo và Menu Button - chỉ hiển thị trên mobile/tablet -->
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm border-b border-solid border-white/10 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+        <h2 class="nameweb text-white text-lg font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <button id="mobile-menu-toggle" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+    </header>
+    <!-- Mobile Menu cho người đã đăng nhập - chỉ hiển thị trên mobile/tablet -->
+    <div id="mobile-menu" class="hidden lg:hidden fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm">
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center gap-2 text-white">
+            <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+            <h2 class="nameweb nameweb-mobile text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+          </div>
+          <button id="mobile-menu-close" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+            <span class="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
+        <nav class="flex flex-col gap-4 p-6 flex-1 overflow-y-auto">
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../../index.html">Trang chủ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="packages.html">Gói tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../lichtap/schedule.html">Lịch tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../hotro/support.html">Hỗ trợ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../danhgia/review.html">Đánh giá</a>
+          <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+            <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../admin/index.html">Vào Admin</a>
+          <?php endif; ?>
+          <div class="flex flex-col gap-2 mt-auto pt-6 border-t border-white/10">
+            <div class="text-white/80 text-sm mb-2">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</div>
+            <a href="#profile" data-modal-target="profile-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-inbox"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-box"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+            <a href="../logout.php" class="text-red-400 hover:text-red-300 transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  <?php else: ?>
+    <!-- Header cho người chưa đăng nhập -->
+    <header class="header">
+      <div class="container nav">
+        <a class="brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="logo">
+          <span>DFC GYM</span>
+        </a>
+        <nav class="menu desktop-nav">
+          <a href="../../index.html#gioi-thieu" class="nav-link">Giới thiệu</a>
+          <a href="../../index.html#dich-vu" class="nav-link">Dịch vụ</a>
+          <a href="../../index.html#thiet-bi" class="nav-link">Thiết bị</a>
+          <a href="../../index.html#hlv" class="nav-link">HLV</a>
+          <a href="../khuyenmai/promotions.php" class="nav-link">Khuyến mãi</a>
+          <a href="../../index.html#dang-nhap" class="btn">Đăng nhập</a>
+        </nav>
+        <button class="menu-toggle" aria-label="Mở menu" aria-expanded="false" aria-controls="main-menu">
+          <span class="bar"></span> <span class="bar"></span> <span class="bar"></span>
+        </button>
+      </div>
+    </header>
+  <?php endif; ?>
+  
+  <div class="menu-overlay" id="menu-overlay"></div>
+  <div class="page-wrapper" id="page-wrapper">
+    <?php if (isset($_SESSION['user'])): ?>
+      <div class="lg:pt-28 pt-20">
+    <?php endif; ?>
+    <nav class="menu-panel" id="main-menu">
+      <div class="menu-header">
+        <a class="menu-brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="menu-logo">
+          <span>DFC GYM</span>
+        </a>
+      </div>
+       <?php if (isset($_SESSION['user'])): ?>
+        <span class="menu-user-name">
+          <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>
+        </span>
+        <a href="../../index.html">Trang chủ</a> <a href="packages.html">Gói tập của tôi</a>
+        
+        <a href="../lichtap/schedule.html">Lịch tập</a>
+        <a href="../hotro/support.html">Hỗ trợ</a>
+        
+        <a href="../danhgia/review.html">Đánh giá dịch vụ</a>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper">
+             <a href="#profile" data-modal-target="profile-modal"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+             <a href="#inbox" data-modal-target="inbox-modal"><i class="fas fa-inbox"></i> Hòm thư</a>
+             <a href="#my-packages" data-modal-target="my-packages-modal"><i class="fas fa-box"></i> Gói tập của bạn</a>
+             <a href="#payment-history" data-modal-target="payment-history-modal"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+             <a href="#payment-management" data-modal-target="payment-management-modal"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+             <a href="#change-password" data-modal-target="change-password-modal"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+             <a href="../getset/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+      <?php else: ?>
+        <a href="../../index.html#gioi-thieu">Giới thiệu</a>
+        <a href="../../index.html#dich-vu">Dịch vụ</a>
+        <a href="../../index.html#thiet-bi">Thiết bị</a>
+        <a href="../../index.html#hlv">HLV</a>
+        <a href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a href="../../index.html#dang-nhap" class="btn" id="login-button-mobile">Đăng nhập</a>
+      <?php endif; ?>
+    </nav>
+
+    <main class="main-content-area">
+        <script src="../../assets/js/flash-banner.js?v=2"></script>
+        <section id="goi-tap" class="section alt package-section">
+          <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+              <h1 class="text-4xl sm:text-5xl font-extrabold text-white mb-4">Chọn Gói Tập Phù Hợp Với Bạn</h1>
+              <p class="text-gray-400">Chọn gói tập phù hợp với nhu cầu và mục tiêu của bạn. Tất cả các gói đều bao gồm quyền truy cập đầy đủ thiết bị và tiện ích phòng tập.</p>
+            </div>
+            <?php
+            // Lấy danh sách gói tập từ database
+            $packages = [];
+            $mostPopularPackageId = null;
+            $packagePromotions = []; // Mảng lưu khuyến mãi theo goi_tap_id
+            try {
+                require_once __DIR__ . '/../../database/config.php';
+                require_once __DIR__ . '/../../database/db_connect.php';
+                
+                // Lấy tất cả gói tập có trạng thái "Đang áp dụng"
+                $stmt = $pdo->query("
+                    SELECT goi_tap_id, ma_goi_tap, ten_goi, mo_ta, thoi_han_ngay, gia_tien, loai_goi, trang_thai
+                    FROM GoiTap
+                    WHERE trang_thai = 'Đang áp dụng'
+                    ORDER BY 
+                        CASE loai_goi
+                            WHEN 'PT cá nhân' THEN 6
+                            WHEN 'VIP' THEN 5
+                            WHEN 'Nâng cao' THEN 4
+                            WHEN 'Cơ bản' THEN 3
+                            ELSE 2
+                        END,
+                        gia_tien ASC
+                ");
+                $packages = $stmt->fetchAll();
+                
+                // Lấy danh sách khuyến mãi đang áp dụng
+                $today = date('Y-m-d');
+                $stmtPromo = $pdo->prepare("
+                    SELECT 
+                        km.khuyen_mai_id,
+                        km.ma_khuyen_mai,
+                        km.ten_khuyen_mai,
+                        km.loai_giam,
+                        km.gia_tri_giam,
+                        km.ap_dung_cho_goi_tap_id
+                    FROM KhuyenMai km
+                    WHERE km.trang_thai = 'Đang áp dụng'
+                      AND km.ngay_bat_dau <= :today
+                      AND km.ngay_ket_thuc >= :today
+                      AND (km.so_luong_ma IS NULL OR km.so_luong_da_dung < km.so_luong_ma)
+                ");
+                $stmtPromo->execute([':today' => $today]);
+                $promotions = $stmtPromo->fetchAll();
+                
+                // Tạo mảng khuyến mãi theo goi_tap_id
+                foreach ($promotions as $promo) {
+                    $goi_tap_id = $promo['ap_dung_cho_goi_tap_id'];
+                    
+                    // Nếu ap_dung_cho_goi_tap_id là NULL, áp dụng cho tất cả gói
+                    if ($goi_tap_id === null) {
+                        // Áp dụng cho tất cả gói tập
+                        foreach ($packages as $pkg) {
+                            if (!isset($packagePromotions[$pkg['goi_tap_id']])) {
+                                $packagePromotions[$pkg['goi_tap_id']] = [];
+                            }
+                            $packagePromotions[$pkg['goi_tap_id']][] = $promo;
+                        }
+                    } else {
+                        // Áp dụng cho gói tập cụ thể
+                        if (!isset($packagePromotions[$goi_tap_id])) {
+                            $packagePromotions[$goi_tap_id] = [];
+                        }
+                        $packagePromotions[$goi_tap_id][] = $promo;
+                    }
+                }
+                
+                // Xác định gói được mua nhiều nhất từ lịch sử mua hàng
+                $stmt = $pdo->query("
+                    SELECT cthd.ten_goi, COUNT(*) as so_lan_mua
+                    FROM ChiTietHoaDon cthd
+                    INNER JOIN HoaDon hd ON cthd.hoa_don_id = hd.hoa_don_id
+                    WHERE hd.trang_thai = 'Đã thanh toán'
+                    GROUP BY cthd.ten_goi
+                    ORDER BY so_lan_mua DESC
+                    LIMIT 1
+                ");
+                $mostPopular = $stmt->fetch();
+                
+                if ($mostPopular && isset($mostPopular['ten_goi'])) {
+                    // Tìm gói tương ứng trong danh sách
+                    foreach ($packages as $pkg) {
+                        if (stripos($pkg['ten_goi'], $mostPopular['ten_goi']) !== false || 
+                            stripos($mostPopular['ten_goi'], $pkg['ten_goi']) !== false) {
+                            $mostPopularPackageId = $pkg['goi_tap_id'];
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting packages: " . $e->getMessage());
+                $packages = []; // Nếu lỗi, mảng rỗng
+            }
+            
+            // Hàm format giá tiền
+            function formatPrice($price) {
+                return number_format($price, 0, ',', '.') . '₫';
+            }
+            
+            // Hàm tạo slug từ ID gói
+            function getPackageSlug($goi_tap_id) {
+                return 'goi-' . $goi_tap_id;
+            }
+            ?>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <?php if (empty($packages)): ?>
+                <div class="col-span-full text-center py-12">
+                  <p class="text-gray-400 text-lg">Hiện tại chưa có gói tập nào.</p>
+                </div>
+              <?php else: ?>
+                <?php foreach ($packages as $pkg): 
+                  $isPopular = ($mostPopularPackageId == $pkg['goi_tap_id']);
+                  $isPT = ($pkg['loai_goi'] === 'PT cá nhân');
+                  $moTaList = !empty($pkg['mo_ta']) ? explode("\n", $pkg['mo_ta']) : [];
+                  $cardId = getPackageSlug($pkg['goi_tap_id']);
+                  
+                  // Kiểm tra xem gói có khuyến mãi không
+                  $hasPromotion = isset($packagePromotions[$pkg['goi_tap_id']]) && !empty($packagePromotions[$pkg['goi_tap_id']]);
+                  $bestPromotion = $hasPromotion ? $packagePromotions[$pkg['goi_tap_id']][0] : null; // Lấy khuyến mãi đầu tiên
+                  
+                  // Tính border class dựa trên có khuyến mãi hay không
+                  $borderClass = 'border-gray-700/50 hover:border-gray-500/50';
+                  if ($hasPromotion) {
+                      $borderClass = 'border-2 border-yellow-500 relative overflow-hidden ring-4 ring-yellow-500/30';
+                  } elseif ($isPopular) {
+                      $borderClass = 'border-2 border-accent-green relative overflow-hidden ring-4 ring-accent-green/20';
+                  }
+                ?>
+                <div class="bg-card-dark rounded-xl p-8 flex flex-col border <?php echo $borderClass; ?> transition-all duration-300 package-card <?php if ($pkg['loai_goi'] === 'VIP') {echo 'featured';} elseif ($pkg['loai_goi'] === 'PT cá nhân') {echo 'featured1';}?>" id="<?php echo htmlspecialchars($cardId); ?>" data-goi-tap-id="<?php echo $pkg['goi_tap_id']; ?>">
+                  <?php if ($hasPromotion): ?>
+                  <div class="absolute top-0 right-0 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-bl-lg z-10 flex items-center gap-1">
+                    <i class="fas fa-tag"></i>
+                    <span><?php 
+                      if ($bestPromotion['loai_giam'] === 'Phần trăm') {
+                          echo 'GIẢM ' . number_format($bestPromotion['gia_tri_giam'], 0) . '%';
+                      } else {
+                          echo 'GIẢM ' . number_format($bestPromotion['gia_tri_giam'], 0, ',', '.') . '₫';
+                      }
+                    ?></span>
+                  </div>
+                  <?php elseif ($isPopular): ?>
+                  <div class="absolute top-0 right-0 bg-white text-background-dark text-xs font-bold px-4 py-1.5 rounded-bl-lg z-10">PHỔ BIẾN</div>
+                  <?php endif; ?>
+                  
+                  <?php if ($hasPromotion): ?>
+                  <div class="absolute top-0 left-0 bg-yellow-500/20 backdrop-blur-sm text-yellow-400 text-xs font-bold px-3 py-1 rounded-br-lg z-10 flex items-center gap-1">
+                    <i class="fas fa-gift"></i>
+                    <span>KHUYẾN MÃI</span>
+                  </div>
+                  <?php endif; ?>
+                  <h2 class="text-2xl font-bold text-white mb-2"><?php echo htmlspecialchars($pkg['ten_goi']); ?></h2>
+                  <p class="text-gray-400 mb-6"><?php echo htmlspecialchars($pkg['loai_goi']); ?></p>
+                  <div class="mb-8">
+                    <?php if ($isPT): ?>
+                      <span class="text-4xl font-extrabold text-white">Liên hệ</span>
+                    <?php else: ?>
+                      <span class="text-5xl font-extrabold text-white"><?php echo formatPrice($pkg['gia_tien']); ?></span>
+                      <?php if ($pkg['thoi_han_ngay']): ?>
+                        <?php 
+                        $unit = ($pkg['thoi_han_ngay'] == 1) ? 'ngày' : 
+                                (($pkg['thoi_han_ngay'] < 30) ? 'ngày' : 
+                                (($pkg['thoi_han_ngay'] == 30) ? 'tháng' : 
+                                (($pkg['thoi_han_ngay'] <= 90) ? 'tháng' : 'tháng')));
+                        ?>
+                        <span class="text-gray-400">/<?php echo $unit; ?></span>
+                      <?php endif; ?>
+                    <?php endif; ?>
+                  </div>
+                  <ul class="space-y-4 mb-10 text-gray-300 flex-grow">
+                    <?php if (!empty($moTaList)): ?>
+                      <?php foreach ($moTaList as $feature): 
+                        $feature = trim($feature);
+                        if (!empty($feature)):
+                      ?>
+                        <li class="flex items-center gap-3">
+                          <span class="material-symbols-outlined text-accent-green">check_circle</span>
+                          <span><?php echo htmlspecialchars($feature); ?></span>
+                        </li>
+                      <?php 
+                        endif;
+                      endforeach; ?>
+                    <?php else: ?>
+                      <?php if ($pkg['thoi_han_ngay']): ?>
+                        <li class="flex items-center gap-3">
+                          <span class="material-symbols-outlined text-accent-green">check_circle</span>
+                          <span>Thời hạn: <strong><?php echo $pkg['thoi_han_ngay']; ?> ngày</strong></span>
+                        </li>
+                      <?php endif; ?>
+                      <li class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-accent-green">check_circle</span>
+                        <span>Loại: <strong><?php echo htmlspecialchars($pkg['loai_goi']); ?></strong></span>
+                      </li>
+                    <?php endif; ?>
+                  </ul>
+                  <?php if ($isPT): ?>
+                    <?php if (!isset($_SESSION['user'])): ?>
+                      <a href="../../index.html#dang-ky" class="w-full bg-gray-700/50 text-white font-semibold py-3 rounded-lg hover:bg-gray-600/50 transition-colors text-center">Liên hệ tư vấn</a>
+                    <?php else: ?>
+                      <a href="../hotro/support.html" class="w-full bg-gray-700/50 text-white font-semibold py-3 rounded-lg hover:bg-gray-600/50 transition-colors text-center">Liên hệ tư vấn</a>
+                    <?php endif; ?>
+                  <?php else: ?>
+                    <?php if (!isset($_SESSION['user'])): ?>
+                      <a href="../../index.html#dang-ky" class="w-full bg-gray-700/50 text-white font-semibold py-3 rounded-lg hover:bg-gray-600/50 transition-colors text-center">Mua gói</a>
+                    <?php else: ?>
+                      <a href="#thanh-toan?goi=<?php echo $pkg['goi_tap_id']; ?>" class="w-full bg-gray-700/50 text-white font-semibold py-3 rounded-lg hover:bg-gray-600/50 transition-colors text-center" data-modal-target="payment-modal" data-package-id="<?php echo $pkg['goi_tap_id']; ?>" data-package-name="<?php echo htmlspecialchars($pkg['ten_goi']); ?>" data-package-price="<?php echo $pkg['gia_tien']; ?>">Mua gói</a>
+                    <?php endif; ?>
+                  <?php endif; ?>
+                </div>
+                <?php endforeach; ?>
+              <?php endif; ?>
+            </div>
+          </div>
+        </section>
+    </main>
+
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
+    
+    <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+    <?php endif; ?>
+  </div> <!-- End page-wrapper --> 
+  
+  <!-- Modal đăng nhập/đăng ký đã được chuyển sang trang chủ (index.html) -->
+  <!-- Chỉ hiển thị ở trang chủ khi chưa đăng nhập để tránh trùng lặp -->
+
+  <div class="modal-overlay hidden" id="payment-modal">
+    <div class="modal-content auth-box"> 
+        <button class="modal-close-btn"><i class="fas fa-times"></i></button>
+        <form id="payment-form" action="process_payment.php" method="POST" novalidate>
+          <a href="../../index.html" class="brand">
+            <img src="../../assets/img/logo.png" alt="Logo">
+            <span>Xác nhận Thanh toán</span>
+          </a>
+          
+          <p class="auth-message message" id="payment-message"></p>
+
+          <div class="form-group">
+            <label>Gói đã chọn:</label>
+            <input type="text" id="payment-package-name" name="package_name" readonly style="background: var(--bg); font-weight: 600;">
+          </div>
+          <div class="form-group">
+            <label>Chi phí:</label>
+            <input type="text" id="payment-package-price" name="package_price" readonly style="background: var(--bg); font-weight: 600; color: var(--primary);">
+          </div>
+
+          <div class="form-group">
+            <label for="payment-phongtap">Chọn phòng tập <span style="color: var(--error);">*</span>:</label>
+            <select id="payment-phongtap" name="phong_tap_id" required style="background: var(--bg-2); padding: 12px;">
+              <option value="">-- Đang tải danh sách phòng tập --</option>
+            </select>
+          </div>
+          
+          <input type="hidden" id="payment-package-id" name="package_id">
+          <input type="hidden" id="payment-method-selected" name="payment_method" value="Ngân hàng">
+
+          <div style="margin: 20px 0; padding: 15px; background: var(--bg-2); border-radius: 8px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">Thông tin khách hàng</h3>
+            
+            <div class="form-group">
+              <label for="payment-phone">Số điện thoại <span style="color: var(--error);">*</span>:</label>
+              <input type="tel" id="payment-phone" name="sdt" placeholder="Nhập số điện thoại" required maxlength="11" pattern="[0-9]{10,11}">
+            </div>
+            
+            <div class="form-group">
+              <label for="payment-cccd">Căn cước công dân <span style="color: var(--error);">*</span>:</label>
+              <input type="text" id="payment-cccd" name="cccd" placeholder="Nhập số CCCD" required maxlength="12" pattern="[0-9]{9,12}">
+            </div>
+            
+            <div class="form-group">
+              <label for="payment-address">Địa chỉ <span style="color: var(--error);">*</span>:</label>
+              <input type="text" id="payment-address" name="dia_chi" placeholder="Nhập địa chỉ" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="payment-birthday">Ngày sinh <span style="color: var(--error);">*</span>:</label>
+              <input type="date" id="payment-birthday" name="ngay_sinh" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="payment-gender">Giới tính <span style="color: var(--error);">*</span>:</label>
+              <select id="payment-gender" name="gioi_tinh" required>
+                <option value="">-- Chọn giới tính --</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="payment-referral">Nguồn giới thiệu:</label>
+              <input type="text" id="payment-referral" name="nguon_gioi_thieu" placeholder="Nhập nguồn giới thiệu (nếu có)">
+            </div>
+            
+          </div>
+
+          <div class="form-group">
+            <label for="payment-notes">Nhập ghi chú (nếu có):</label>
+            <textarea id="payment-notes" name="ghi_chu" placeholder="Nhập ghi chú (nếu có)" rows="2" style="width: 100%; padding: 12px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border-color); color: var(--text); font-family: inherit; resize: vertical;"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Chọn phương thức thanh toán:</label>
+            <?php
+            // Hiển thị danh sách phương thức đã lưu
+            if (isset($_SESSION['user'])) {
+                try {
+                    @require_once __DIR__ . '/../../database/config.php';
+                    @require_once __DIR__ . '/../../database/db_connect.php';
+                    
+                    if (isset($pdo)) {
+                        $username = $_SESSION['user']['username'];
+                        $stmt = $pdo->prepare("SELECT khach_hang_id FROM KhachHang WHERE ten_dang_nhap = :username LIMIT 1");
+                        $stmt->execute([':username' => $username]);
+                        $khachHang = $stmt->fetch();
+                        
+                        if ($khachHang) {
+                            $khach_hang_id = $khachHang['khach_hang_id'];
+                            
+                            // Tạo bảng nếu chưa có
+                            try {
+                                $pdo->exec("CREATE TABLE IF NOT EXISTS PhuongThucThanhToan (
+                                    phuong_thuc_id INT AUTO_INCREMENT PRIMARY KEY,
+                                    khach_hang_id INT NOT NULL,
+                                    loai_phuong_thuc ENUM('Tiền mặt', 'Chuyển khoản', 'Thẻ', 'Ví điện tử') NOT NULL,
+                                    ten_hien_thi VARCHAR(100) NOT NULL,
+                                    thong_tin_chi_tiet VARCHAR(255),
+                                    mac_dinh BOOLEAN DEFAULT 0,
+                                    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE CASCADE
+                                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                            } catch (Exception $e) {
+                                error_log("Error creating payment methods table: " . $e->getMessage());
+                            }
+                            
+                            // Lấy danh sách phương thức đã lưu
+                            try {
+                                $stmt = $pdo->prepare("SELECT phuong_thuc_id, loai_phuong_thuc, ten_hien_thi, thong_tin_chi_tiet, mac_dinh 
+                                                       FROM PhuongThucThanhToan 
+                                                       WHERE khach_hang_id = :kh_id 
+                                                       ORDER BY mac_dinh DESC, ngay_tao DESC");
+                                $stmt->execute([':kh_id' => $khach_hang_id]);
+                                $savedMethods = $stmt->fetchAll();
+                                
+                                if (count($savedMethods) > 0) {
+                                    echo '<div style="margin-bottom: 15px; padding: 15px; background: var(--bg-2); border-radius: 8px;">';
+                                    echo '<label style="display: block; margin-bottom: 10px; font-weight: 600;">Phương thức đã lưu:</label>';
+                                    echo '<select id="saved-payment-method">';
+                                    echo '<option value="">-- Chọn phương thức đã lưu --</option>';
+                                    
+                                    foreach ($savedMethods as $method) {
+                                        $phuong_thuc_id = $method['phuong_thuc_id'];
+                                        $ten_hien_thi = htmlspecialchars($method['ten_hien_thi']);
+                                        $thong_tin = htmlspecialchars($method['thong_tin_chi_tiet'] ?? '');
+                                        $loai_phuong_thuc = $method['loai_phuong_thuc'];
+                                        $mac_dinh = $method['mac_dinh'];
+                                        
+                                        $display_text = $ten_hien_thi . ' - ' . $thong_tin;
+                                        if ($mac_dinh) {
+                                            $display_text .= ' (Mặc định)';
+                                        }
+                                        
+                                        echo '<option value="' . (int)$phuong_thuc_id . '" data-loai="' . htmlspecialchars($loai_phuong_thuc) . '" data-ten="' . htmlspecialchars($ten_hien_thi) . '">' . $display_text . '</option>';
+                                    }
+                                    
+                                    echo '</select>';
+                                    echo '<p class="muted" style="font-size: 12px; margin-top: 10px; margin-bottom: 0;">Hoặc chọn phương thức mới bên dưới</p>';
+                                    echo '</div>';
+                                }
+                            } catch (Exception $e) {
+                                error_log("Error loading saved payment methods: " . $e->getMessage());
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log("Error in payment methods section: " . $e->getMessage());
+                }
+            }
+            ?>
+            <div class="payment-tab-menu">
+                <button type="button" class="payment-tab-link active" data-target="#pay-details-bank"><i class="fas fa-university"></i> Ngân hàng</button>
+                <button type="button" class="payment-tab-link" data-target="#pay-details-momo"><i class="fas fa-mobile-alt"></i> Momo</button>
+                <button type="button" class="payment-tab-link" data-target="#pay-details-zalo"><i class="fas fa-mobile-alt"></i> ZaloPay</button>
+                <button type="button" class="payment-tab-link" data-target="#pay-details-visa"><i class="fab fa-cc-visa"></i> Visa</button>
+                <button type="button" class="payment-tab-link" data-target="#pay-details-paypal"><i class="fab fa-paypal"></i> PayPal</button>
+            </div>
+          </div>
+
+          <div class="payment-tab-content">
+            
+              <div id="pay-details-bank" class="payment-details active">
+                  <div class="payment-qr-layout">
+                      <img src="../../assets/img/bank.jpg" class="qr-image">
+                      <div class="qr-info">
+                          <p class="muted" style="font-size: 14px;">Quét mã QR để thanh toán (Nội dung: DFC <Tên bạn>)</p>
+                          <p style="font-size: 14px; line-height: 1.6;">
+                              Ngân hàng: <strong>MB Bank</strong><br>
+                              STK: <strong>0363102985</strong><br>
+                              Chủ TK: <strong>DINH BA VU</strong>
+                          </p>
+                          <button type="submit" class="btn" style="background: var(--success); opacity: 0.5; cursor: not-allowed; padding: 12px 20px; white-space: normal; word-wrap: break-word; min-height: 48px;" data-payment-method="Ngân hàng" disabled>Tôi đã thanh toán</button>
+                      </div>
+                  </div>
+              </div>
+
+              <div id="pay-details-momo" class="payment-details">
+                  <div class="payment-qr-layout">
+                      <img src="../../assets/img/momo.jpg" class="qr-image">
+                      <div class="qr-info">
+                           <p class="muted" style="font-size: 14px;">Quét mã QR Momo</p>
+                           <p style="font-size: 14px; line-height: 1.6;">
+                            Ví điện tử: <strong>Momo</strong><br>
+                            STK: <strong>0363102985</strong><br>
+                            Chủ TK: <strong>DINH BA VU</strong>
+                        </p>
+                           <button type="submit" class="btn" style="background: var(--success); opacity: 0.5; cursor: not-allowed; padding: 12px 20px; white-space: normal; word-wrap: break-word; min-height: 48px;" data-payment-method="Momo" disabled>Tôi đã thanh toán</button>
+                      </div>
+                  </div>
+              </div>
+
+              <div id="pay-details-zalo" class="payment-details">
+                   <div class="payment-qr-layout">
+                      <img src="../../assets/img/zalopay.jpg" class="qr-image">
+                      <div class="qr-info">
+                          <p class="muted" style="font-size: 14px;">Quét mã QR ZaloPay</p>
+                          <p style="font-size: 14px; line-height: 1.6;">
+                            Ví điện tử: <strong>Zalopay</strong><br>
+                            STK: <strong>0363102985</strong><br>
+                            Chủ TK: <strong>DINH BA VU</strong>
+                        </p>
+                          <button type="submit" class="btn" style="background: var(--success); opacity: 0.5; cursor: not-allowed; padding: 12px 20px; white-space: normal; word-wrap: break-word; min-height: 48px;" data-payment-method="ZaloPay" disabled>Tôi đã thanh toán</button>
+                      </div>
+                  </div>
+              </div>
+
+              <div id="pay-details-visa" class="payment-details">
+                  <div class="form-group">
+                    <label for="card-number">Số thẻ</label>
+                    <input type="text" id="card-number" name="card_number" placeholder="XXXX XXXX XXXX XXXX">
+                  </div>
+                  <div class="form-group">
+                    <label for="card-name">Họ tên trên thẻ</label>
+                    <input type="text" id="card-name" name="card_name" placeholder="NGUYEN VAN A">
+                  </div>
+                  <div class="grid-2" style="gap: 10px;">
+                      <div class="form-group">
+                        <label for="card-expiry">Ngày hết hạn</label>
+                        <input type="text" id="card-expiry" name="card_expiry" placeholder="MM/YY">
+                      </div>
+                      <div class="form-group">
+                        <label for="card-cvc">CVC</label>
+                        <input type="text" id="card-cvc" name="card_cvc" placeholder="123">
+                      </div>
+                  </div>
+                  <button type="submit" class="btn" style="opacity: 0.5; cursor: not-allowed;" data-payment-method="Visa" disabled>Thanh toán ngay</button>
+              </div>
+
+              <div id="pay-details-paypal" class="payment-details">
+                  <p class="center muted" style="font-size: 14px;">Bạn sẽ được chuyển hướng đến PayPal để hoàn tất thanh toán.</p>
+                  <button type="submit" class="btn" style="background: #00457C; border-color: #00457C; opacity: 0.5; cursor: not-allowed;" data-payment-method="PayPal" disabled>
+                      <i class="fab fa-paypal"></i> Thanh toán với PayPal
+                  </button>
+              </div>
+          </div>
+
+        </form>
+      </div>
+  </div>
+  
+  <!-- Account Modal được include từ account-modal.php -->
+
+  
+
+  
+  <script src="../../assets/js/auth.js?v=6"></script>
+  
+  <!-- Navigation Script - Phải load trước các script khác -->
+  <script src="../../assets/js/navigation.js?v=3"></script>
+  
+  <!-- Packages Page Script - Phải load trước user-menu và account-modal -->
+  <script src="../../assets/js/scroll-fix.js?v=1"></script>
+  <script src="../../assets/js/packages.js?v=6"></script>
+  
+  <script src="../../assets/js/user-menu.js?v=4"></script>
+  
+  <!-- Simple Modals - thay thế account-modal phức tạp -->
+  <?php include __DIR__ . '/../includes/simple-modals.php'; ?>
+  
+  <!-- Inbox Modal -->
+  <div class="modal-overlay hidden" id="inbox-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="inbox-modal-close" onclick="if(typeof closeInboxModal === 'function') closeInboxModal(); else document.getElementById('inbox-modal').classList.remove('active'); return false;"><i class="fas fa-times"></i></button>
+      
+      <div class="modal-header">
+        <a href="../index.html" class="brand">
+          <img src="../../assets/img/logo.png" alt="Logo">
+          <span><i class="fas fa-inbox"></i> Hòm thư</span>
+        </a>
+        <button id="mark-all-read-btn" onclick="if(typeof markAllInboxAsRead === 'function') markAllInboxAsRead();" 
+                title="Đánh dấu tất cả đã đọc"
+                class="mark-all-read-btn">
+          <i class="fas fa-check-double"></i>
+          <span class="mark-all-read-text">Đã đọc tất cả</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="muted center">
+          Xem thông báo, phản hồi hỗ trợ và cập nhật từ DFC Gym
+        </p>
+
+        <div class="inbox-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-total-count">0</div>
+            <div class="stat-label">Tổng số thông báo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-unread-count">0</div>
+            <div class="stat-label">Chưa đọc</div>
+          </div>
+        </div>
+
+        <div id="inbox-notifications-list">
+          <div class="empty-inbox">
+            <i class="fas fa-inbox"></i>
+            <p>Bạn chưa có thông báo nào</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Inbox Modal Script -->
+  <script src="../../assets/js/inbox-modal-v2.js?v=1"></script>
+  
+  <!-- Modals Loader Script - Load dữ liệu vào các modal -->
+  <script src="../../assets/js/modals-loader.js?v=3"></script>
+
+  <!-- Modal Hủy Gói Tập -->
+  <div class="modal-overlay hidden" id="cancel-package-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeCancelPackageModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="modal-header">
+        <div>
+          <div>
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div>
+            <h2>Xác nhận hủy gói tập</h2>
+            <p>Hành động này không thể hoàn tác</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <p>
+          Bạn có chắc chắn muốn hủy gói tập này? Sau khi hủy, bạn sẽ không thể tiếp tục sử dụng gói tập và sẽ nhận được tiền hoàn lại theo chính sách của chúng tôi.
+        </p>
+        
+        <div>
+          <div>
+            <div>
+              <div>
+                <i class="fas fa-box"></i>
+              </div>
+              <div>
+                <p>Gói tập</p>
+                <p id="cancel-package-name">-</p>
+              </div>
+            </div>
+            
+            <div></div>
+            
+            <div>
+              <div>
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div>
+                <p>Tiến độ</p>
+                <p id="cancel-usage-info">-</p>
+              </div>
+            </div>
+            
+            <div id="cancel-refund-info">
+              <div>
+                <i class="fas fa-money-bill-wave"></i>
+                <div>
+                  <p>Tiền hoàn lại</p>
+                  <p id="cancel-refund-amount">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <form method="POST" action="cancel_package.php" id="cancel-package-form">
+          <input type="hidden" name="dang_ky_id" id="cancel-dang-ky-id" value="">
+          
+          <div>
+            <button type="button" class="btn ghost" onclick="closeCancelPackageModal()">
+              <i class="fas fa-arrow-left"></i> Hủy bỏ
+            </button>
+            <button type="submit" class="btn">
+              <i class="fas fa-times-circle"></i> Xác nhận hủy
+            </button>
+          </div>
+        </form>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Method Form Tabs Script -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const paymentTypeTabs = document.querySelectorAll('.payment-type-tab');
+      const paymentFormSections = document.querySelectorAll('.payment-form-section');
+      const paymentTypeInput = document.getElementById('payment-type-input');
+      
+      function updateRequiredFields(activeType) {
+          // Remove required from all inputs
+          paymentFormSections.forEach(section => {
+              const inputs = section.querySelectorAll('input[required], select[required]');
+              inputs.forEach(input => input.removeAttribute('required'));
+          });
+          
+          // Add required to active section inputs
+          const activeSection = document.getElementById('form-' + activeType);
+          if (activeSection) {
+              const inputs = activeSection.querySelectorAll('input, select');
+              inputs.forEach(input => {
+                  // Skip checkbox
+                  if (input.type !== 'checkbox') {
+                      input.setAttribute('required', 'required');
+                  }
+              });
+          }
+      }
+      
+      if (paymentTypeTabs.length > 0) {
+          paymentTypeTabs.forEach(tab => {
+              tab.addEventListener('click', function() {
+                  const type = this.getAttribute('data-type');
+                  
+                  // Remove active class from all tabs
+                  paymentTypeTabs.forEach(t => {
+                      t.classList.remove('active');
+                      t.style.borderBottomColor = 'transparent';
+                      t.style.color = 'var(--text)';
+                  });
+                  
+                  // Add active class to clicked tab
+                  this.classList.add('active');
+                  this.style.borderBottomColor = 'var(--primary)';
+                  this.style.color = 'var(--primary)';
+                  
+                  // Hide all form sections
+                  paymentFormSections.forEach(section => {
+                      section.style.display = 'none';
+                      section.classList.remove('active');
+                  });
+                  
+                  // Show selected form section
+                  const targetSection = document.getElementById('form-' + type);
+                  if (targetSection) {
+                      targetSection.style.display = 'block';
+                      targetSection.classList.add('active');
+                  }
+                  
+                  // Update hidden input
+                  if (paymentTypeInput) {
+                      paymentTypeInput.value = type;
+                  }
+                  
+                  // Update required fields
+                  updateRequiredFields(type);
+              });
+          });
+          
+          // Set initial active tab style and required fields
+          const activeTab = document.querySelector('.payment-type-tab.active');
+          if (activeTab) {
+              activeTab.style.borderBottomColor = 'var(--primary)';
+              activeTab.style.color = 'var(--primary)';
+              const activeType = activeTab.getAttribute('data-type');
+              updateRequiredFields(activeType);
+          }
+      }
+      
+      // Handle form submission validation
+      const savePaymentForm = document.getElementById('save-payment-form');
+      if (savePaymentForm) {
+          savePaymentForm.addEventListener('submit', function(e) {
+              const activeSection = document.querySelector('.payment-form-section.active');
+              if (!activeSection) {
+                  e.preventDefault();
+                  alert('Vui lòng chọn loại phương thức thanh toán');
+                  return false;
+              }
+              
+              const type = paymentTypeInput ? paymentTypeInput.value : 'card';
+              
+              // Validate based on type
+              if (type === 'card') {
+                  const cardNumber = document.getElementById('card-number-acc-modal').value.trim();
+                  const cardName = document.getElementById('card-name-acc-modal').value.trim();
+                  const cardExpiry = document.getElementById('card-expiry-acc-modal').value.trim();
+                  const cardCvc = document.getElementById('card-cvc-acc-modal').value.trim();
+                  
+                  if (!cardNumber || !cardName || !cardExpiry || !cardCvc) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin thẻ');
+                      return false;
+                  }
+              } else if (type === 'ewallet') {
+                  const ewalletType = document.getElementById('ewallet-type-acc-modal').value.trim();
+                  const ewalletAccount = document.getElementById('ewallet-account-acc-modal').value.trim();
+                  
+                  if (!ewalletType || !ewalletAccount) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin ví điện tử');
+                      return false;
+                  }
+              } else if (type === 'bank') {
+                  const bankName = document.getElementById('bank-name-acc-modal').value.trim();
+                  const bankAccount = document.getElementById('bank-account-acc-modal').value.trim();
+                  const accountHolder = document.getElementById('account-holder-acc-modal').value.trim();
+                  
+                  if (!bankName || !bankAccount || !accountHolder) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin ngân hàng');
+                      return false;
+                  }
+              }
+          });
+      }
+      
+      // Xử lý chọn phương thức đã lưu trong payment modal
+      const savedPaymentMethod = document.getElementById('saved-payment-method');
+      const paymentMethodSelected = document.getElementById('payment-method-selected');
+      const paymentTabLinks = document.querySelectorAll('.payment-tab-link');
+      const paymentDetails = document.querySelectorAll('.payment-details');
+      const paymentForm = document.getElementById('payment-form');
+      
+      if (savedPaymentMethod) {
+          savedPaymentMethod.addEventListener('change', function() {
+              if (this.value) {
+                  const selectedOption = this.options[this.selectedIndex];
+                  const loai = selectedOption.getAttribute('data-loai');
+                  const ten = selectedOption.getAttribute('data-ten');
+                  
+                  // Cập nhật phương thức thanh toán
+                  if (paymentMethodSelected) {
+                      paymentMethodSelected.value = ten;
+                  }
+                  
+                  // Ẩn tất cả tab và details
+                  paymentTabLinks.forEach(link => link.classList.remove('active'));
+                  paymentDetails.forEach(detail => detail.classList.remove('active'));
+                  
+                  // Hiển thị thông báo đã chọn phương thức đã lưu
+                  if (paymentForm) {
+                      // Tạo hoặc cập nhật thông báo
+                      let notice = paymentForm.querySelector('.saved-method-notice');
+                      if (!notice) {
+                          notice = document.createElement('div');
+                          notice.className = 'saved-method-notice';
+                          notice.style.cssText = 'padding: 15px; background: var(--bg-2); border-radius: 8px; margin-bottom: 15px; border-left: 4px solid var(--primary);';
+                          const paymentTabMenuParent = paymentForm.querySelector('.payment-tab-menu').parentElement;
+                          paymentForm.insertBefore(notice, paymentTabMenuParent);
+                      }
+                      notice.innerHTML = '<strong>Đã chọn:</strong> ' + ten + ' - ' + selectedOption.text.split(' - ')[1];
+                      
+                      // Tạo hoặc hiển thị nút thanh toán
+                      let payButtonContainer = paymentForm.querySelector('.saved-method-pay-button');
+                      if (!payButtonContainer) {
+                          payButtonContainer = document.createElement('div');
+                          payButtonContainer.className = 'saved-method-pay-button';
+                          payButtonContainer.style.cssText = 'margin-top: 20px; text-align: center;';
+                          paymentForm.appendChild(payButtonContainer);
+                      }
+                      
+                      payButtonContainer.innerHTML = '<button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px; font-weight: 600;"><i class="fas fa-check-circle"></i> Xác nhận thanh toán</button>';
+                      payButtonContainer.style.display = 'block';
+                  }
+              } else {
+                  // Xóa thông báo và nút nếu không chọn
+                  const notice = document.querySelector('.saved-method-notice');
+                  if (notice) {
+                      notice.remove();
+                  }
+                  const payButtonContainer = paymentForm.querySelector('.saved-method-pay-button');
+                  if (payButtonContainer) {
+                      payButtonContainer.style.display = 'none';
+                  }
+              }
+          });
+      }
+      
+      // Khi chọn tab phương thức mới, ẩn nút thanh toán từ phương thức đã lưu và cập nhật payment_method
+      if (paymentTabLinks.length > 0) {
+          paymentTabLinks.forEach(link => {
+              link.addEventListener('click', function(e) {
+                  e.preventDefault();
+                  
+                  const payButtonContainer = paymentForm ? paymentForm.querySelector('.saved-method-pay-button') : null;
+                  if (payButtonContainer) {
+                      payButtonContainer.style.display = 'none';
+                  }
+                  
+                  // Xóa thông báo đã chọn phương thức đã lưu
+                  const notice = paymentForm ? paymentForm.querySelector('.saved-method-notice') : null;
+                  if (notice) {
+                      notice.remove();
+                  }
+                  
+                  // Reset dropdown
+                  if (savedPaymentMethod) {
+                      savedPaymentMethod.value = '';
+                  }
+                  
+                  // Xóa active class từ tất cả tabs và details
+                  paymentTabLinks.forEach(l => l.classList.remove('active'));
+                  paymentDetails.forEach(d => d.classList.remove('active'));
+                  
+                  // Thêm active class cho tab được chọn
+                  this.classList.add('active');
+                  
+                  // Cập nhật payment_method dựa trên tab được chọn
+                  const target = this.getAttribute('data-target');
+                  let method = 'Ngân hàng'; // Mặc định
+                  
+                  if (target === '#pay-details-bank') {
+                      method = 'Ngân hàng';
+                  } else if (target === '#pay-details-momo') {
+                      method = 'Momo';
+                  } else if (target === '#pay-details-zalo') {
+                      method = 'ZaloPay';
+                  } else if (target === '#pay-details-visa') {
+                      method = 'Visa';
+                  } else if (target === '#pay-details-paypal') {
+                      method = 'PayPal';
+                  }
+                  
+                  if (paymentMethodSelected) {
+                      paymentMethodSelected.value = method;
+                  }
+                  
+                  // Hiển thị payment details tương ứng
+                  const targetDetail = document.querySelector(target);
+                  if (targetDetail) {
+                      targetDetail.classList.add('active');
+                  }
+                  
+                  // Enable tất cả các nút thanh toán trong payment details hiện tại
+                  const activeDetail = document.querySelector('.payment-details.active');
+                  if (activeDetail) {
+                      const submitButtons = activeDetail.querySelectorAll('button[type="submit"]');
+                      submitButtons.forEach(btn => {
+                          btn.disabled = false;
+                          btn.style.opacity = '1';
+                          btn.style.cursor = 'pointer';
+                      });
+                  }
+                  
+                  // Disable các nút trong các payment details khác
+                  paymentDetails.forEach(detail => {
+                      if (!detail.classList.contains('active')) {
+                          const submitButtons = detail.querySelectorAll('button[type="submit"]');
+                          submitButtons.forEach(btn => {
+                              btn.disabled = true;
+                              btn.style.opacity = '0.5';
+                              btn.style.cursor = 'not-allowed';
+                          });
+                      }
+                  });
+              });
+          });
+      }
+      
+      // Khởi tạo: Enable nút thanh toán cho tab đầu tiên (Ngân hàng)
+      const initialActiveDetail = document.querySelector('.payment-details.active');
+      if (initialActiveDetail) {
+          const submitButtons = initialActiveDetail.querySelectorAll('button[type="submit"]');
+          submitButtons.forEach(btn => {
+              btn.disabled = false;
+              btn.style.opacity = '1';
+              btn.style.cursor = 'pointer';
+          });
+      }
+  });
+  </script>
+  
+  <!-- Inbox Modal Script -->
+  <script src="../../assets/js/inbox-modal-v2.js?v=1"></script>
+  
+  <!-- Cancel Package Script -->
+  <script src="../../assets/js/cancel-package.js?v=4"></script>
+  
+  <!-- Load Phòng Tập Script -->
+  <script>
+  // Load danh sách phòng tập khi trang được tải
+  document.addEventListener('DOMContentLoaded', function() {
+    loadPhongTapList();
+  });
+
+  async function loadPhongTapList() {
+    const selectElement = document.getElementById('payment-phongtap');
+    if (!selectElement) return;
+
+    try {
+      const response = await fetch('get_phongtap_list.php');
+      const data = await response.json();
+      
+      if (data.success && data.data.length > 0) {
+        selectElement.innerHTML = '<option value="">-- Chọn phòng tập --</option>';
+        data.data.forEach(pt => {
+          const option = document.createElement('option');
+          // Ưu tiên sử dụng phong_tap_id (tên mới trong schema)
+          const phongTapId = pt.phong_tap_id || pt.chi_nhanh_id;
+          const tenPhongTap = pt.ten_phong_tap || pt.ten_chi_nhanh;
+          
+          // Đảm bảo value là số nguyên
+          option.value = phongTapId ? parseInt(phongTapId) : '';
+          option.textContent = `${tenPhongTap} - ${pt.dia_chi || ''}`;
+          
+          // Log để debug
+          console.log('Added phong tap option:', {
+            phong_tap_id: phongTapId,
+            ten_phong_tap: tenPhongTap,
+            value: option.value
+          });
+          
+          selectElement.appendChild(option);
+        });
+      } else {
+        selectElement.innerHTML = '<option value="">Không có phòng tập nào</option>';
+      }
+    } catch (error) {
+      console.error('Error loading phòng tập:', error);
+      selectElement.innerHTML = '<option value="">Lỗi khi tải danh sách phòng tập</option>';
+    }
+  }
+  </script>
+  
+  <!-- Mobile Menu Script -->
+  <?php if (isset($_SESSION['user'])): ?>
+    <script src="../../assets/js/mobile-menu.js?v=1"></script>
+  <?php endif; ?>
+  
+  <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+  <?php endif; ?>
+  </div> <!-- End page-wrapper -->
+
+</body>
+</html>

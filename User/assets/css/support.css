@@ -1,0 +1,121 @@
+/* === CSS MỚI CHO FORM === */
+/* Font family cho trang support */
+body {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.support-section .form input {
+   padding: 12px;
+   background: #0d1628; 
+   color: #fff;
+   border: 1px solid rgba(255, 255, 255, .15);
+   border-radius: 12px;
+   outline: none;
+   width: 100%; 
+   margin-bottom: 10px; 
+   box-sizing: border-box;
+}
+
+/* === THÊM CSS CHO TEXTAREA === */
+.support-section .form textarea {
+   width: 100%; 
+   padding: 12px; 
+   background: #0d1628; 
+   color: #fff; 
+   border: 1px solid rgba(255, 255, 255, .15); 
+   border-radius: 12px; 
+   outline: none; 
+   font-size: 15px; 
+   box-sizing: border-box; 
+   margin-bottom: 10px; 
+   font-family: inherit;
+   resize: none;
+}
+
+.support-section .form input:focus,
+.support-section .form textarea:focus { 
+   border-color: var(--primary);
+   box-shadow: 0 0 0 4px var(--ring);
+}
+ 
+ /* === THAY ĐỔI CSS CHO NÚT GỬI === */
+ /* Selector đã được đổi từ .form .btn thành .card .btn */
+ .support-section .card .btn {
+     display: block; 
+     width: 100%; 
+     padding: 13px 28px; 
+     border: none;
+     border-radius: 12px; 
+     background-color: #22c55e; 
+     color: #ffffff; 
+     font-size: 16px;
+     font-weight: 600; 
+     text-align: center;
+     text-transform: uppercase; 
+     letter-spacing: 0.5px;
+     cursor: pointer;
+     transition: all 0.3s ease; 
+     margin-top: 10px; 
+ }
+
+ .support-section .card .btn:hover {
+     background-color: #16a34a; 
+     box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); 
+     transform: translateY(-2px); 
+ }
+ /* === HẾT PHẦN CSS NÚT GỬI === */
+ 
+ .support-section .contact p { margin-bottom: 15px; line-height: 1.6;}
+ .support-section .map-skel { 
+   margin-top: 12px;
+   height: 180px;
+   border-radius: 12px;
+   border: 1px dashed rgba(255, 255, 255, .2);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   color: var(--muted);
+ }
+  /* Đã bỏ hiệu ứng chuyển trang - chuyển trang trực tiếp */
+    .page-wrapper {
+        /* Không có animation */
+    }
+    .page-wrapper.fade-out {
+        /* Không có animation */
+    }
+    /* === HẾT CSS MỚI === */
+
+/* === RESPONSIVE CHO MOBILE === */
+@media (max-width: 768px) {
+    .support-section .form input,
+    .support-section .form textarea {
+        padding: 10px;
+        font-size: 14px;
+    }
+    .support-section .card .btn {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+    .support-section .map-skel {
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .support-section .form input,
+    .support-section .form textarea {
+        padding: 9px;
+        font-size: 13px;
+    }
+    .support-section .form textarea {
+        min-height: 80px;
+    }
+    .support-section .card .btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    .support-section .map-skel {
+        height: 120px;
+        font-size: 13px;
+    }
+}

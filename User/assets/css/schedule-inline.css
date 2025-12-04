@@ -1,0 +1,153 @@
+/* CSS cho schedule.html */
+
+/* Ẩn thanh cuộn cho toàn bộ trang */
+html {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+body {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Đã bỏ hiệu ứng chuyển trang - chuyển trang trực tiếp */
+.page-wrapper {
+  /* Không có animation */
+}
+.page-wrapper.fade-out {
+  /* Không có animation */
+}
+/* === HẾT CSS HIỆU ỨNG === */
+
+/* (đã xóa style alert message) */
+
+/* === CSS CHO MODAL SỬA LỊCH TẬP === */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.active {
+  display: flex;
+}
+.modal-content {
+  background: var(--bg-1);
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-header {
+  padding: 20px 30px;
+  border-bottom: 1px solid var(--border-color);
+}
+.modal-header h2 {
+  margin: 0;
+  color: var(--text);
+}
+.modal-close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  z-index: 1;
+}
+.modal-close-btn:hover {
+  color: var(--primary);
+}
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-1);
+  color: var(--text);
+  font-size: 14px;
+  margin-top: 5px;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+/* === HẾT CSS MODAL === */
+
+/* === RESPONSIVE CHO MOBILE === */
+@media (max-width: 768px) {
+  /* Modal */
+  .modal-overlay {
+    padding: 15px;
+  }
+  .modal-content {
+    max-width: 95vw;
+    max-height: 85vh;
+    padding: 20px;
+  }
+  .modal-header {
+    padding: 15px 20px;
+  }
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  .modal-close-btn {
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    padding: 4px;
+  }
+  .form-control {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  
+}
+
+@media (max-width: 480px) {
+  /* Modal */
+  .modal-overlay {
+    padding: 10px;
+  }
+  .modal-content {
+    max-width: 98vw;
+    padding: 15px;
+  }
+  .modal-header {
+    padding: 12px 15px;
+  }
+  .modal-header h2 {
+    font-size: 18px;
+  }
+  .modal-close-btn {
+    top: 8px;
+    right: 8px;
+    font-size: 18px;
+  }
+  .form-control {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  
+}
+

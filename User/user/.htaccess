@@ -1,0 +1,6 @@
+# .htaccess tương thích với XAMPP và WAMP
+# Cho phép PHP chạy trên file .html và .htm
+AddType application/x-httpd-php .html .htm
+
+# Set default charset
+AddDefaultCharset UTF-8

@@ -1,0 +1,38 @@
+/* CSS cho support.html */
+
+/* Ẩn thanh cuộn cho toàn bộ trang */
+html {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+body {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Đã bỏ hiệu ứng chuyển trang - chuyển trang trực tiếp */
+.page-wrapper {
+  /* Không có animation */
+}
+.page-wrapper.fade-out {
+  /* Không có animation */
+}
+/* === HẾT CSS HIỆU ỨNG === */
+
+/* === RESPONSIVE CHO MOBILE === */
+@media (max-width: 768px) {
+  /* Các cải thiện responsive sẽ được thêm vào đây nếu cần */
+}
+
+@media (max-width: 480px) {
+  /* Các cải thiện responsive cho màn hình rất nhỏ */
+}
+

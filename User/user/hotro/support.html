@@ -1,0 +1,402 @@
+<?php
+// Luôn bắt đầu session ở dòng đầu tiên
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hỗ trợ & Liên hệ - DFC GYM</title>
+  <meta name="description" content="Liên hệ hỗ trợ hoặc gửi yêu cầu tới DFC Gym">
+  <link rel="icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="shortcut icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="apple-touch-icon" href="../../assets/img/logo.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography" onerror="console.error('Tailwind CDN failed to load'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/lib/index.min.js';"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/support.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/support-inline.css">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#22c55e",
+            "primary-dark": "#16a34a",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102213",
+          },
+          fontFamily: {
+            "display": ["Lexend", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    };
+  </script>
+</head>
+
+<body data-logged-in="<?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>" class="dark font-display bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary antialiased">
+
+  <?php if (isset($_SESSION['user'])): ?>
+    <!-- Header Desktop cho người đã đăng nhập - chỉ hiển thị trên PC -->
+    <header class="hidden lg:flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+        <h2 class="nameweb text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <nav class="flex items-center gap-9">
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../../index.html">Trang chủ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../goitap/packages.html">Gói tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../lichtap/schedule.html">Lịch tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="support.html">Hỗ trợ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../danhgia/review.html">Đánh giá</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <span class="text-white/80 text-sm font-medium">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</span>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em]">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper relative">
+          <button class="user-icon-button p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10" id="user-menu-button">
+            <i class="fas fa-user-circle text-xl"></i>
+          </button>
+          <div class="user-dropdown hidden absolute top-full right-0 mt-2 bg-background-dark border border-white/10 rounded-lg shadow-lg min-w-[200px] z-50" id="user-dropdown-menu">
+            <a href="#profile" data-modal-target="profile-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-user-edit mr-2"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-inbox mr-2"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-box mr-2"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-history mr-2"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-credit-card mr-2"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-key mr-2"></i> Đổi mật khẩu</a>
+            <a href="../getset/logout.php" class="block px-4 py-2 text-red-400 hover:text-red-300 hover:bg-white/10"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Mobile Header với Logo và Menu Button - chỉ hiển thị trên mobile/tablet -->
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm border-b border-solid border-white/10 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+        <h2 class="nameweb text-white text-lg font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <button id="mobile-menu-toggle" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+    </header>
+    <!-- Mobile Menu cho người đã đăng nhập - chỉ hiển thị trên mobile/tablet -->
+    <div id="mobile-menu" class="hidden lg:hidden fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm">
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center gap-2 text-white">
+            <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+            <h2 class="nameweb nameweb-mobile text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+          </div>
+          <button id="mobile-menu-close" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+            <span class="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
+        <nav class="flex flex-col gap-4 p-6 flex-1 overflow-y-auto">
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../../index.html">Trang chủ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../goitap/packages.html">Gói tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../lichtap/schedule.html">Lịch tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="support.html">Hỗ trợ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../danhgia/review.html">Đánh giá</a>
+          <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+            <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../admin/index.html">Vào Admin</a>
+          <?php endif; ?>
+          <div class="flex flex-col gap-2 mt-auto pt-6 border-t border-white/10">
+            <div class="text-white/80 text-sm mb-2">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</div>
+            <a href="#profile" data-modal-target="profile-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-inbox"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-box"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+            <a href="logout.php" class="text-red-400 hover:text-red-300 transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  <?php else: ?>
+    <!-- Header cho người chưa đăng nhập -->
+    <header class="header">
+      <div class="container nav">
+        <a class="brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="logo">
+          <span>DFC GYM</span>
+        </a>
+        <nav class="menu desktop-nav">
+          <a href="../../index.html#gioi-thieu" class="nav-link">Giới thiệu</a>
+          <a href="../../index.html#dich-vu" class="nav-link">Dịch vụ</a>
+          <a href="../../index.html#thiet-bi" class="nav-link">Thiết bị</a>
+          <a href="../../index.html#hlv" class="nav-link">HLV</a>
+          <a href="../../index.html#dang-nhap" class="btn">Đăng nhập</a>
+        </nav>
+        <button class="menu-toggle" aria-label="Mở menu" aria-expanded="false" aria-controls="main-menu">
+          <span class="bar"></span> <span class="bar"></span> <span class="bar"></span>
+        </button>
+      </div>
+    </header>
+  <?php endif; ?>
+  
+  <div class="menu-overlay" id="menu-overlay"></div>
+  <div class="page-wrapper" id="page-wrapper">
+    <?php if (isset($_SESSION['user'])): ?>
+      <div class="lg:pt-28 pt-20">
+    <?php endif; ?>
+    <nav class="menu-panel" id="main-menu">
+      <div class="menu-header">
+        <a class="menu-brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="menu-logo">
+          <span>DFC GYM</span>
+        </a>
+      </div>
+       <?php if (isset($_SESSION['user'])): ?>
+        <span class="menu-user-name">
+          <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>
+        </span>
+        <a href="../../index.html">Trang chủ</a>
+        <a href="goitap/packages.html">Gói tập</a>
+        <a href="schedule.html">Lịch tập</a>
+        <a href="support.html">Hỗ trợ</a>
+        <a href="../danhgia/review.html">Đánh giá</a>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper">
+             <a href="#profile" data-modal-target="profile-modal"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+             <a href="#inbox" data-modal-target="inbox-modal"><i class="fas fa-inbox"></i> Hòm thư</a>
+             <a href="#my-packages" data-modal-target="my-packages-modal"><i class="fas fa-box"></i> Gói tập của bạn</a>
+             <a href="#payment-history" data-modal-target="payment-history-modal"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+             <a href="#payment-management" data-modal-target="payment-management-modal"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+             <a href="#change-password" data-modal-target="change-password-modal"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+             <a href="../getset/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+      <?php else: ?>
+        <a href="../../index.html#gioi-thieu">Giới thiệu</a>
+        <a href="../../index.html#dich-vu">Dịch vụ</a>
+        <a href="../../index.html#thiet-bi">Thiết bị</a>
+        <a href="../../index.html#hlv">HLV</a>
+        <a href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a href="../../index.html#dang-nhap" class="btn" id="login-button-mobile">Đăng nhập</a>
+      <?php endif; ?>
+    </nav>
+
+    <main class="main-content-area">
+        <script src="../../assets/js/flash-banner.js?v=3"></script>
+        
+        <section id="lien-he" class="section support-section">
+          <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div class="text-center max-w-2xl mx-auto mb-8">
+              <h1 class="text-4xl sm:text-5xl font-bold tracking-tight text-text-light-primary dark:text-text-dark-primary">Hỗ trợ & Liên hệ</h1>
+              <div class="mt-4 w-20 h-1 bg-primary mx-auto rounded-full"></div>
+              <p class="mt-4 text-lg text-text-light-secondary dark:text-text-dark-secondary">
+                Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc của bạn. Hãy để lại thông tin và chúng tôi sẽ phản hồi sớm nhất.
+              </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+              <div class="lg:col-span-3 bg-surface-light dark:bg-surface-dark p-8 rounded-xl shadow-lg border border-border-light dark:border-border-dark">
+                <div class="mb-8">
+                  <h2 class="flex items-center gap-3 text-2xl font-bold text-text-light-primary dark:text-text-dark-primary">
+                    <span class="material-symbols-outlined text-primary">send</span>
+                    Gửi yêu cầu hỗ trợ
+                  </h2>
+                  <p class="mt-2 text-text-light-secondary dark:text-text-dark-secondary">
+                    Điền thông tin dưới đây và chúng tôi sẽ liên hệ bạn trong vòng 24 giờ.
+                  </p>
+                </div>
+                <form class="space-y-6" id="supportForm" action="send_support_request.php" method="POST" novalidate>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                      <label class="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2" for="support_name">Họ và tên</label>
+                      <?php if (isset($_SESSION['user'])): ?>
+                        <input class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_name" name="support_name" placeholder="Họ và tên *" value="<?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? ''); ?>" required autocomplete="name" type="text">
+                      <?php else: ?>
+                        <input class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_name" name="support_name" placeholder="Họ và tên *" required autocomplete="name" type="text">
+                      <?php endif; ?>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2" for="support_email">Email</label>
+                      <?php if (isset($_SESSION['user'])): ?>
+                        <input class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_email" name="support_email" placeholder="Email *" value="<?php echo htmlspecialchars($_SESSION['user']['email'] ?? ''); ?>" required autocomplete="email" type="email">
+                      <?php else: ?>
+                        <input class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_email" name="support_email" placeholder="Email *" required autocomplete="email" type="email">
+                      <?php endif; ?>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2" for="support_phone">Số điện thoại</label>
+                    <input class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_phone" name="support_phone" placeholder="Số điện thoại *" required autocomplete="tel" type="tel">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary mb-2" for="support_message">Nội dung yêu cầu</label>
+                    <textarea class="block w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary transition-colors px-4 py-2 text-text-light-primary dark:text-white" id="support_message" name="support_message" placeholder="Vui lòng mô tả vấn đề hoặc câu hỏi của bạn..." rows="6" required></textarea>
+                  </div>
+                  <div>
+                    <button class="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-white bg-primary hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-background-dark transition-transform hover:scale-[1.02] active:scale-[0.98]" type="submit" id="support-submit-btn">
+                      <span class="material-symbols-outlined">send</span>
+                      Gửi yêu cầu
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <div class="lg:col-span-2 space-y-8">
+                <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-xl shadow-lg border border-border-light dark:border-border-dark">
+                  <h2 class="flex items-center gap-3 text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+                    <span class="material-symbols-outlined text-primary">contacts</span>
+                    Thông tin liên hệ
+                  </h2>
+                  <ul class="space-y-4 text-text-light-secondary dark:text-text-dark-secondary">
+                    <li class="flex items-start gap-4">
+                      <span class="material-symbols-outlined text-primary mt-1">call</span>
+                      <div>
+                        <span class="font-semibold text-text-light-primary dark:text-text-dark-primary">Hotline</span><br/>
+                        <a class="hover:text-primary transition-colors" href="tel:0912345678">0912 345 678</a>
+                      </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                      <span class="material-symbols-outlined text-primary mt-1">mail</span>
+                      <div>
+                        <span class="font-semibold text-text-light-primary dark:text-text-dark-primary">Email</span><br/>
+                        <a class="hover:text-primary transition-colors" href="mailto:contact@dfcgym.vn">contact@dfcgym.vn</a>
+                      </div>
+                    </li>
+                    <li class="flex items-start gap-4">
+                      <span class="material-symbols-outlined text-primary mt-1">location_on</span>
+                      <div>
+                        <span class="font-semibold text-text-light-primary dark:text-text-dark-primary">Địa chỉ</span><br/>
+                        123 Đường Fitness, Quận 1, TP. Hồ Chí Minh
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-xl shadow-lg border border-border-light dark:border-border-dark">
+                  <h2 class="flex items-center gap-3 text-2xl font-bold text-text-light-primary dark:text-text-dark-primary mb-6">
+                    <span class="material-symbols-outlined text-primary">schedule</span>
+                    Giờ làm việc
+                  </h2>
+                  <ul class="space-y-2 text-text-light-secondary dark:text-text-dark-secondary">
+                    <li class="flex justify-between">
+                      <span>Thứ 2 - Thứ 7:</span>
+                      <span class="font-medium text-text-light-primary dark:text-text-dark-primary">5:00 - 22:00</span>
+                    </li>
+                    <li class="flex justify-between">
+                      <span>Chủ nhật:</span>
+                      <span class="font-medium text-text-light-primary dark:text-text-dark-primary">6:00 - 21:00</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <?php if (isset($_SESSION['user'])): ?>
+            <div class="mt-12 text-center">
+              <a href="#inbox" data-modal-target="inbox-modal" class="bg-transparent border-2 border-border-light dark:border-border-dark text-text-light-secondary dark:text-text-dark-secondary font-semibold py-3 px-8 rounded-full hover:bg-primary hover:text-white hover:border-primary transition-all inline-block">
+                <i class="fas fa-inbox"></i> Xem hòm thư của bạn
+              </a>
+            </div>
+            <?php endif; ?>
+            
+          </div>
+        </section>
+    </main>
+
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
+    
+    <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+    <?php endif; ?>
+  </div> <!-- End page-wrapper -->
+  
+  <!-- Modal đăng nhập/đăng ký đã được chuyển sang trang chủ (index.html) -->
+  <!-- Chỉ hiển thị ở trang chủ khi chưa đăng nhập để tránh trùng lặp -->
+
+  <script src="../../assets/js/auth.js?v=6"></script>
+  
+  <!-- Navigation Script - Phải load trước các script khác -->
+  <script src="../../assets/js/navigation.js?v=3"></script>
+  
+  <!-- Support Page Script - Phải load trước user-menu và account-modal -->
+  <script src="../../assets/js/scroll-fix.js?v=1"></script>
+  <script src="../../assets/js/support.js?v=4"></script>
+  
+  <script src="../../assets/js/user-menu.js?v=4"></script>
+  
+  <!-- Simple Modals - thay thế account-modal phức tạp -->
+  <?php include __DIR__ . '/../includes/simple-modals.php'; ?>
+  
+  <!-- Inbox Modal Script -->
+  <script src="../../assets/js/inbox-modal-v2.js?v=1"></script>
+  
+  <!-- Modals Loader Script - Load dữ liệu vào các modal -->
+  <script src="../../assets/js/modals-loader.js?v=3"></script>
+  
+  <!-- Modal Hòm thư -->
+  <div class="modal-overlay hidden" id="inbox-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="inbox-modal-close" onclick="if(typeof closeInboxModal === 'function') closeInboxModal(); else document.getElementById('inbox-modal').classList.remove('active'); return false;"><i class="fas fa-times"></i></button>
+      
+      <div class="modal-header">
+        <a href="../../index.html" class="brand">
+          <img src="../../assets/img/logo.png" alt="Logo">
+          <span><i class="fas fa-inbox"></i> Hòm thư</span>
+        </a>
+        <button id="mark-all-read-btn" onclick="if(typeof markAllInboxAsRead === 'function') markAllInboxAsRead();" 
+                title="Đánh dấu tất cả đã đọc"
+                class="mark-all-read-btn">
+          <i class="fas fa-check-double"></i>
+          <span class="mark-all-read-text">Đã đọc tất cả</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="muted center">
+          Xem thông báo, phản hồi hỗ trợ và cập nhật từ DFC Gym
+        </p>
+
+        <div class="inbox-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-total-count">0</div>
+            <div class="stat-label">Tổng số thông báo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-unread-count">0</div>
+            <div class="stat-label">Chưa đọc</div>
+          </div>
+        </div>
+
+        <div id="inbox-notifications-list">
+          <div class="empty-inbox">
+            <i class="fas fa-inbox"></i>
+            <p>Bạn chưa có thông báo nào</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mobile Menu Script -->
+  <?php if (isset($_SESSION['user'])): ?>
+    <script src="../../assets/js/mobile-menu.js?v=1"></script>
+  <?php endif; ?>
+  
+  <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+  <?php endif; ?>
+  </div> <!-- End page-wrapper -->
+
+</body>
+</html>
+

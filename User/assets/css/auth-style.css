@@ -1,0 +1,145 @@
+/* Tái sử dụng biến màu từ trang chính */
+:root {
+  --bg: #0b0f1a;
+  --bg-2: #0f1525;
+  --card: #111a2a;
+  --text: #e6edf3;
+  --muted: #9fb0c3;
+  --primary: #22c55e;
+  --primary-dark: #16a34a;
+  --primary-light: #4ade80;
+  --accent: #ff3040;
+  --success: #22c55e;
+  --ring: rgba(34, 197, 94, .35);
+  --border-color: rgba(255, 255, 255, .1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.auth-container {
+  padding: 20px;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+  background: var(--card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.brand img {
+  height: 50px;
+  width: 50px;
+}
+
+.brand span {
+  font-weight: 800;
+  font-size: 20px;
+}
+
+.auth-box h2 {
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  background: var(--bg-2);
+  color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  outline: none;
+  font-size: 15px;
+  box-sizing: border-box; /* Quan trọng */
+}
+
+.form-group input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--ring);
+}
+
+.btn {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  background: var(--primary);
+  color: #fefefe;
+  font-weight: 800;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, .25);
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn:hover {
+  filter: brightness(1.1);
+}
+
+.switch-auth {
+  text-align: center;
+  margin-top: 20px;
+  color: var(--muted);
+}
+.switch-auth a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-message {
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  display: none; /* Ẩn ban đầu */
+  margin-bottom: 15px;
+}
+.auth-message.error {
+  color: var(--accent);
+  background: rgba(255, 48, 64, .1);
+  border: 1px solid var(--accent);
+  display: block;
+}
+.auth-message.success {
+  color: var(--success);
+  background: rgba(57, 217, 138, .1);
+  border: 1px solid var(--success);
+  display: block;
+}

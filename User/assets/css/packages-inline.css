@@ -1,0 +1,263 @@
+/* CSS cho packages.html */
+
+/* Ẩn thanh cuộn cho toàn bộ trang */
+html {
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+body {
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Đã bỏ hiệu ứng chuyển trang - chuyển trang trực tiếp */
+.page-wrapper {
+  /* Không có animation */
+}
+.page-wrapper.fade-out {
+  /* Không có animation */
+}
+/* === HẾT CSS HIỆU ỨNG === */
+
+/* === CSS CHO TAB THANH TOÁN NGANG === */
+.payment-tab-menu {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+  overflow-x: auto; /* Cho phép cuộn ngang tab trên mobile */
+  padding-bottom: 5px; /* Tạo khoảng trống cho thanh cuộn */
+}
+.payment-tab-link {
+  flex: 1; /* Chia đều */
+  min-width: 90px; /* Chiều rộng tối thiểu cho mỗi tab */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-2);
+  color: var(--muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 13px; /* Giảm font-size 1 chút */
+}
+.payment-tab-link:hover {
+  background: var(--card);
+  color: var(--text);
+}
+.payment-tab-link.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.payment-details {
+  display: none; /* Ẩn tất cả các chi tiết thanh toán */
+  animation: fadeIn 0.3s ease-in-out; /* Hiệu ứng mờ khi chuyển tab */
+}
+.payment-details.active {
+  display: block; /* Chỉ hiện mục active */
+}
+.payment-tab-link img {
+  width: 16px;
+  height: 16px;
+}
+
+/* === LAYOUT MODAL THANH TOÁN === */
+#payment-modal .modal-content {
+  max-width: 1100px; /* Tăng bề rộng để hiển thị thông tin tài khoản rõ ràng hơn */
+  width: 90%;
+}
+/* Layout dọc cho tất cả màn hình (giống mobile) */
+.payment-qr-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  align-items: center;
+  width: 100%;
+}
+.payment-qr-layout .qr-image {
+  width: 280px;
+  height: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
+  display: block;
+  border-radius: 8px;
+  border: 2px solid rgba(147, 51, 234, 0.3); /* Light purple border */
+  padding: 8px;
+  background: #fff;
+  object-fit: contain;
+  margin: 0 auto;
+}
+.payment-qr-layout .qr-info {
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+.payment-qr-layout .qr-info p {
+  margin: 0;
+  color: var(--text);
+  text-align: center;
+}
+.payment-qr-layout .qr-info p.muted {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.payment-qr-layout .qr-info p:not(.muted) {
+  font-size: 15px;
+  line-height: 1.8;
+  text-align: center;
+  margin-bottom: 18px;
+  word-wrap: break-word;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.payment-qr-layout .qr-info p strong {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+.payment-qr-layout .qr-info .btn {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  white-space: normal;
+  word-wrap: break-word;
+  line-height: 1.4;
+  padding: 15px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  align-self: center;
+}
+@media (max-width: 800px) {
+  #payment-modal .modal-content {
+    max-width: 95vw; /* Gần full mobile */
+  }
+  /* Điều chỉnh kích thước cho mobile */
+  .payment-qr-layout {
+    gap: 20px;
+  }
+  .payment-qr-layout .qr-image {
+    width: 250px;
+    height: 250px;
+  }
+  .payment-qr-layout .qr-info p {
+    font-size: 13px;
+  }
+  .payment-qr-layout .qr-info p:not(.muted) {
+    max-width: 100%;
+  }
+  .payment-qr-layout .qr-info .btn {
+    max-width: 100%;
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+}
+/* === HẾT CSS MODAL THANH TOÁN === */
+
+/* (đã xóa style alert message) */
+
+/* === RESPONSIVE CHO MOBILE === */
+@media (max-width: 768px) {
+  /* Payment Tab Menu */
+  .payment-tab-menu {
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .payment-tab-link {
+    min-width: 80px;
+    padding: 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .payment-tab-link img {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Payment Modal */
+  #payment-modal .modal-content {
+    max-width: 95vw;
+    padding: 20px;
+  }
+  .payment-qr-layout {
+    gap: 15px;
+  }
+  .payment-qr-layout .qr-image {
+    width: 200px;
+    height: 200px;
+  }
+  .payment-qr-layout .qr-info p {
+    font-size: 12px;
+  }
+  .payment-qr-layout .qr-info p:not(.muted) {
+    max-width: 100%;
+  }
+  .payment-qr-layout .qr-info .btn {
+    max-width: 100%;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  
+}
+
+@media (max-width: 480px) {
+  /* Payment Tab Menu */
+  .payment-tab-menu {
+    gap: 3px;
+  }
+  .payment-tab-link {
+    min-width: 70px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+  .payment-tab-link img {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Payment Modal */
+  #payment-modal .modal-content {
+    padding: 15px;
+  }
+  .payment-qr-layout {
+    gap: 12px;
+  }
+  .payment-qr-layout .qr-image {
+    width: 180px;
+    height: 180px;
+  }
+  .payment-qr-layout .qr-info p {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  .payment-qr-layout .qr-info p:not(.muted) {
+    max-width: 100%;
+  }
+  .payment-qr-layout .qr-info .btn {
+    max-width: 100%;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  
+}
+

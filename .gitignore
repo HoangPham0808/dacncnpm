@@ -1,0 +1,26 @@
+# Composer
+/vendor/
+
+# Node modules
+/node_modules/
+
+# Cache
+cache/
+tmp/
+logs/
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# WAMP or local server temp files
+*.log
+*.tmp

@@ -1,0 +1,41 @@
+# .htaccess tương thích với XAMPP và WAMP (Apache 2.2 và 2.4)
+# Cho phép PHP chạy trên file .html và .htm
+AddType application/x-httpd-php .html .htm
+
+# Set default index file
+DirectoryIndex index.html index.php index.htm
+
+# Enable Rewrite Engine
+RewriteEngine On
+
+# Fix trailing slash issues - Chỉ áp dụng cho thư mục, không áp dụng cho file
+# Không thêm trailing slash cho file PHP, HTML, CSS, JS
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !(.*)/$
+RewriteCond %{REQUEST_URI} !\.(php|html|htm|css|js|jpg|jpeg|png|gif|svg|ico|pdf)$ [NC]
+RewriteRule ^(.*)$ $1/ [L,R=301]
+
+# Bảo vệ file config và sensitive files
+# Tương thích với cả Apache 2.2 và 2.4
+<FilesMatch "^(config\.php|db_connect\.php|\.htaccess|\.env)$">
+    # Apache 2.4 syntax (ưu tiên)
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    # Apache 2.2 syntax (fallback)
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Prevent directory listing
+Options -Indexes
+
+# Error pages (optional)
+# ErrorDocument 404 /index.html
+# ErrorDocument 500 /index.html

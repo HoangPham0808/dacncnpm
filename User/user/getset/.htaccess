@@ -1,0 +1,14 @@
+# .htaccess tương thích với XAMPP và WAMP (Apache 2.2 và 2.4)
+# Cho phép truy cập các file PHP
+<Files "*.php">
+    # Apache 2.4 syntax (ưu tiên)
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    # Apache 2.2 syntax (fallback)
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+

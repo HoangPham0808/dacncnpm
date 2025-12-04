@@ -1,0 +1,1447 @@
+<?php
+// Luôn bắt đầu session ở dòng đầu tiên
+session_start();
+?>
+<!doctype html>
+<html lang="vi" class="<?php echo isset($_SESSION['user']) ? '' : 'dark'; ?>">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DFC Gym - Dynamic Fitness Club</title>
+  <meta name="description" content="DFC Gym – Bền bỉ • Dẻo dai • Tự tin">
+  <link rel="icon" type="image/png" href="assets/img/logo.png">
+  <link rel="shortcut icon" type="image/png" href="assets/img/logo.png">
+  <link rel="apple-touch-icon" href="assets/img/logo.png">
+  <?php if (!isset($_SESSION['user'])): ?>
+    <!-- Tailwind CSS cho trang chưa đăng nhập -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" onerror="console.error('Tailwind CDN failed to load'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/lib/index.min.js';"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#22c55e",
+              "primary-dark": "#16a34a",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102213",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+  <?php else: ?>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography" onerror="console.error('Tailwind CDN failed to load'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/lib/index.min.js';"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#22c55e",
+              "primary-dark": "#16a34a",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102213",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+  <?php endif; ?>
+</head>
+<body data-logged-in="<?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>" class="<?php echo isset($_SESSION['user']) ? 'dark bg-background-dark font-display text-gray-300 antialiased' : 'bg-background-dark font-display'; ?>">
+<?php if (isset($_SESSION['user'])): ?>
+  <!-- Header cho người đã đăng nhập - Desktop -->
+  <header class="hidden lg:flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm">
+    <div class="flex items-center gap-2 text-white">
+      <img src="assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+      <h2 class="nameweb text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+    </div>
+    <nav class="flex items-center gap-9">
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="index.html">Trang chủ</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/goitap/packages.html">Gói tập</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/khuyenmai/promotions.php">Khuyến mãi</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/lichtap/schedule.html">Lịch tập</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/hotro/support.html">Hỗ trợ</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/danhgia/review.html">Đánh giá</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <span class="text-white/80 text-sm font-medium">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</span>
+      <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+        <a href="admin/index.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em]">Vào Admin</a>
+      <?php endif; ?>
+      <div class="user-menu-wrapper relative z-50">
+        <button class="user-icon-button p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 relative z-50 cursor-pointer" id="user-menu-button" type="button" aria-label="Mở menu người dùng">
+          <i class="fas fa-user-circle text-xl pointer-events-none"></i>
+        </button>
+        <div class="user-dropdown hidden absolute top-full right-0 mt-2 bg-background-dark border border-white/10 rounded-lg shadow-lg min-w-[200px] z-[60]" id="user-dropdown-menu">
+          <a href="#profile" data-modal-target="profile-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-user-edit mr-2"></i> Thông tin tài khoản</a>
+          <a href="#inbox" data-modal-target="inbox-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-inbox mr-2"></i> Hòm thư</a>
+          <a href="#my-packages" data-modal-target="my-packages-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-box mr-2"></i> Gói tập của bạn</a>
+          <a href="#payment-history" data-modal-target="payment-history-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-history mr-2"></i> Lịch sử thanh toán</a>
+          <a href="#payment-management" data-modal-target="payment-management-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-credit-card mr-2"></i> Quản lý thanh toán</a>
+          <a href="#change-password" data-modal-target="change-password-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-key mr-2"></i> Đổi mật khẩu</a>
+          <a href="user/getset/logout.php" class="block px-4 py-2 text-red-400 hover:text-red-300 hover:bg-white/10"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Mobile Header với Logo và Menu Button - chỉ hiển thị trên mobile/tablet -->
+  <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm border-b border-solid border-white/10 px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2 text-white">
+      <img src="assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+      <h2 class="nameweb text-white text-lg font-bold leading-none self-center">DFC GYM</h2>
+    </div>
+    <button id="mobile-menu-toggle" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+      <span class="material-symbols-outlined text-2xl">menu</span>
+    </button>
+  </header>
+  <!-- Mobile Menu cho người đã đăng nhập - chỉ hiển thị trên mobile/tablet -->
+  <div id="mobile-menu" class="hidden lg:hidden fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm">
+    <div class="flex flex-col h-full">
+      <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center gap-2 text-white">
+            <img src="assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto">
+            <h2 class="nameweb nameweb-mobile text-white text-xl font-bold">DFC GYM</h2>
+          </div>
+        <button id="mobile-menu-close" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+      <nav class="flex flex-col gap-4 p-6 flex-1 overflow-y-auto">
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="index.html">Trang chủ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/goitap/packages.html">Gói tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/khuyenmai/promotions.php">Khuyến mãi</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/lichtap/schedule.html">Lịch tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/hotro/support.html">Hỗ trợ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/danhgia/review.html">Đánh giá</a>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="admin/index.html">Vào Admin</a>
+        <?php endif; ?>
+        <div class="flex flex-col gap-2 mt-auto pt-6 border-t border-white/10">
+          <div class="text-white/80 text-sm mb-2">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</div>
+          <a href="#profile" data-modal-target="profile-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+          <a href="#inbox" data-modal-target="inbox-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-inbox"></i> Hòm thư</a>
+          <a href="#my-packages" data-modal-target="my-packages-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-box"></i> Gói tập của bạn</a>
+          <a href="#payment-history" data-modal-target="payment-history-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+          <a href="#payment-management" data-modal-target="payment-management-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+          <a href="#change-password" data-modal-target="change-password-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+          <a href="user/getset/logout.php" class="text-red-400 hover:text-red-300 transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+      </nav>
+    </div>
+  </div>
+  <?php else: ?>
+  <!-- Header mới cho người chưa đăng nhập - Tailwind CSS -->
+  <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm">
+    <div class="flex items-center gap-2 text-white">
+      <img src="assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+      <h2 class="nameweb text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+    </div>
+    <nav class="hidden lg:flex items-center gap-9">
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#top">Trang chủ</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#dich-vu">Dịch vụ</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#thiet-bi">Thiết bị</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#hlv">HLV</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="user/khuyenmai/promotions.php">Khuyến mãi</a>
+      <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="#lien-he">Liên hệ</a>
+</nav>
+    <div class="flex items-center gap-3">
+      <button type="button" class="hidden lg:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em]" data-modal-target="register-modal">Tham gia ngay</button>
+      <button type="button" class="hidden lg:flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-white/10 text-white text-sm font-bold leading-normal tracking-[0.015em]" data-modal-target="login-modal">Đăng nhập</button>
+      <button id="mobile-menu-toggle" class="lg:hidden p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+  </header>
+  <!-- Mobile Menu cho người chưa đăng nhập -->
+  <div id="mobile-menu" class="hidden lg:hidden fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm">
+    <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center gap-4 text-white">
+            <img src="assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+            <h2 class="nameweb nameweb-mobile text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+          </div>
+        <button id="mobile-menu-close" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <nav class="flex flex-col gap-4 p-6 flex-1">
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="#top">Trang chủ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="#dich-vu">Dịch vụ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="#thiet-bi">Thiết bị</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="#hlv">HLV</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="user/khuyenmai/promotions.php">Khuyến mãi</a>
+        <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="#lien-he">Liên hệ</a>
+        <div class="flex flex-col gap-3 mt-auto pt-6 border-t border-white/10">
+          <button type="button" class="flex items-center justify-center rounded-full h-14 px-7 bg-primary text-background-dark text-base font-bold" data-modal-target="register-modal">Tham gia ngay</button>
+          <button type="button" class="flex items-center justify-center rounded-full h-14 px-7 bg-white/10 text-white text-base font-bold" data-modal-target="login-modal">Đăng nhập</button>
+        </div>
+      </nav>
+    </div>
+  </div>
+<?php endif; ?>
+    <?php if (isset($_SESSION['user'])): ?>
+        <main id="dashboard" class="bg-background-dark text-white antialiased">
+            <div class="lg:pt-28 pt-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 lg:py-16">
+                <section class="mb-16 md:mb-20 lg:mb-24">
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-white">Ưu đãi đặc biệt</h2>
+                    <div class="w-20 h-1 bg-primary mx-auto mb-8 md:mb-10 lg:mb-12 rounded-full"></div>
+                    
+                    <!-- Swiper Carousel cho Banner -->
+                    <div class="swiper promo-banner-swiper max-w-full mx-auto px-4 md:px-8 lg:px-12" style="overflow: visible;">
+                        <div class="swiper-wrapper">
+                            <!-- Slide 1: Tặng 1 tháng tập miễn phí -->
+                            <div class="swiper-slide">
+                                <div class="bg-surface-dark p-3 md:p-4 lg:p-5 rounded-xl lg:rounded-2xl shadow-xl border-2 border-white/30 overflow-hidden h-full relative promo-banner-card">
+                                    <!-- Trang trí viền - Quả tạ góc trên trái -->
+                                    <div class="absolute top-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Quả tạ góc trên phải -->
+                                    <div class="absolute top-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới trái -->
+                                    <div class="absolute bottom-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới phải -->
+                                    <div class="absolute bottom-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Pattern trang trí viền trên -->
+                                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <!-- Pattern trang trí viền dưới -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <div class="relative w-full aspect-video lg:aspect-[21/9] rounded-lg lg:rounded-xl overflow-hidden">
+                                        <img alt="Nội thất phòng gym hiện đại với nhiều thiết bị tập luyện" class="w-full h-full object-cover rounded-lg lg:rounded-xl" src="assets/img/trangchu1.jpg">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none"></div>
+                                        <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 lg:bottom-8 lg:left-8 p-4 md:p-5 lg:p-6 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md rounded-xl lg:rounded-2xl border border-white/20 shadow-2xl max-w-sm lg:max-w-md">
+                                            <h3 class="text-lg md:text-xl lg:text-2xl font-bold text-white mb-1.5 md:mb-2 leading-tight tracking-tight">Tặng 1 tháng tập miễn phí</h3>
+                                            <p class="text-gray-100 text-xs md:text-sm lg:text-base font-normal leading-relaxed">Khi đăng ký gói tập 1 năm.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 3: Tặng 3 buổi PT miễn phí (sẽ là slide giữa ban đầu) -->
+                            <div class="swiper-slide">
+                                <div class="bg-surface-dark p-3 md:p-4 lg:p-5 rounded-xl lg:rounded-2xl shadow-xl border-2 border-white/30 overflow-hidden h-full relative promo-banner-card">
+                                    <!-- Trang trí viền - Quả tạ góc trên trái -->
+                                    <div class="absolute top-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Quả tạ góc trên phải -->
+                                    <div class="absolute top-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới trái -->
+                                    <div class="absolute bottom-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới phải -->
+                                    <div class="absolute bottom-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Pattern trang trí viền trên -->
+                                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <!-- Pattern trang trí viền dưới -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <div class="relative w-full aspect-video lg:aspect-[21/9] rounded-lg lg:rounded-xl overflow-hidden">
+                                        <img alt="Không gian tập luyện chuyên nghiệp tại DFC Gym" class="w-full h-full object-cover rounded-lg lg:rounded-xl" src="assets/img/tb1.jpg">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none"></div>
+                                        <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 lg:bottom-8 lg:left-8 p-4 md:p-5 lg:p-6 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md rounded-xl lg:rounded-2xl border border-white/20 shadow-2xl max-w-sm lg:max-w-md">
+                                            <h3 class="text-lg md:text-xl lg:text-2xl font-bold text-white mb-1.5 md:mb-2 leading-tight tracking-tight">Tặng 3 buổi PT miễn phí</h3>
+                                            <p class="text-gray-100 text-xs md:text-sm lg:text-base font-normal leading-relaxed">Khi đăng ký gói tập 6 tháng.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Slide 2: Giảm 20% cho thành viên mới (sẽ là slide cuối) -->
+                            <div class="swiper-slide">
+                                <div class="bg-surface-dark p-3 md:p-4 lg:p-5 rounded-xl lg:rounded-2xl shadow-xl border-2 border-white/30 overflow-hidden h-full relative promo-banner-card">
+                                    <!-- Trang trí viền - Quả tạ góc trên trái -->
+                                    <div class="absolute top-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Quả tạ góc trên phải -->
+                                    <div class="absolute top-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">fitness_center</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới trái -->
+                                    <div class="absolute bottom-2 left-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Trang trí viền - Barbell góc dưới phải -->
+                                    <div class="absolute bottom-2 right-2 z-10 text-white/50">
+                                        <span class="material-symbols-outlined text-2xl md:text-3xl lg:text-4xl">sports_gymnastics</span>
+                                    </div>
+                                    <!-- Pattern trang trí viền trên -->
+                                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <!-- Pattern trang trí viền dưới -->
+                                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"></div>
+                                    <div class="relative w-full aspect-video lg:aspect-[21/9] rounded-lg lg:rounded-xl overflow-hidden">
+                                        <img alt="Phòng gym hiện đại với thiết bị tập luyện đa dạng" class="w-full h-full object-cover rounded-lg lg:rounded-xl" src="assets/img/tb4.jpg">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none"></div>
+                                        <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 lg:bottom-8 lg:left-8 p-4 md:p-5 lg:p-6 bg-gradient-to-br from-black/70 via-black/60 to-black/70 backdrop-blur-md rounded-xl lg:rounded-2xl border border-white/20 shadow-2xl max-w-sm lg:max-w-md">
+                                            <h3 class="text-lg md:text-xl lg:text-2xl font-bold text-white mb-1.5 md:mb-2 leading-tight tracking-tight">Giảm 20% cho thành viên mới</h3>
+                                            <p class="text-gray-100 text-xs md:text-sm lg:text-base font-normal leading-relaxed">Áp dụng cho gói tập 3 tháng trở lên.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Navigation buttons -->
+                        <div class="swiper-button-next promo-banner-next"></div>
+                        <div class="swiper-button-prev promo-banner-prev"></div>
+                        
+                        <!-- Pagination -->
+                        <div class="swiper-pagination promo-banner-pagination"></div>
+                    </div>
+                </section>
+                <section class="mb-20 md:mb-28">
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-white">Gói tập phổ biến</h2>
+                    <div class="w-20 h-1 bg-primary mx-auto mb-12 rounded-full"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-surface-dark p-8 rounded-lg border border-border-dark shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                            <h3 class="text-xl font-semibold text-gray-300 mb-2">Tháng (Phổ biến)</h3>
+                            <p class="text-4xl font-bold text-white mb-6">450.000₫</p>
+                            <ul class="space-y-3 mb-8 text-gray-300">
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Không giới hạn buổi tập</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> 01 buổi PT</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Ưu đãi mua kèm phụ kiện</li>
+                        </ul>
+                            <a href="user/goitap/packages.html#thang" class="w-full bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors block text-center">Gia hạn ngay</a>
+                      </div>
+                        <div class="bg-surface-dark p-8 rounded-lg border-2 border-primary shadow-lg relative overflow-hidden transform hover:-translate-y-2 transition-transform duration-300">
+                            <div class="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-4 py-1 rounded-bl-lg">GIÁ TỐT NHẤT</div>
+                            <h3 class="text-xl font-semibold text-gray-300 mb-2">Năm (Tiết kiệm)</h3>
+                            <p class="text-4xl font-bold text-white mb-6">4.500.000₫</p>
+                            <ul class="space-y-3 mb-8 text-gray-300">
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Tặng 2 tháng (tổng 14 tháng)</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> 3 buổi PT miễn phí</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> 1 áo tập miễn phí</li>
+                        </ul>
+                            <a href="user/goitap/packages.html#nam" class="w-full bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors block text-center">Nâng cấp ngay</a>
+                      </div>
+                        <div class="bg-surface-dark p-8 rounded-lg border border-border-dark shadow-lg transform hover:-translate-y-2 transition-transform duration-300">
+                            <h3 class="text-xl font-semibold text-gray-300 mb-2">Gói PT 12 buổi</h3>
+                            <p class="text-4xl font-bold text-white mb-6">Liên hệ</p>
+                            <ul class="space-y-3 mb-8 text-gray-300">
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Lộ trình cá nhân hóa 1-1</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Tư vấn dinh dưỡng</li>
+                                <li class="flex items-center"><span class="material-symbols-outlined text-primary mr-2">check_circle</span> Cam kết kết quả</li>
+                        </ul>
+                            <a href="user/goitap/packages.html#pt" class="w-full bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors block text-center">Liên hệ tư vấn</a>
+                      </div>
+                    </div>
+                    <div class="text-center mt-12">
+                        <a href="user/goitap/packages.html" class="bg-transparent border-2 border-border-dark text-gray-300 font-semibold py-3 px-8 rounded-full hover:bg-primary hover:text-white hover:border-primary transition-all inline-block">
+                            Xem tất cả gói tập
+                        </a>
+                </div>
+            </section>
+                <section id="bmi-calculator">
+                    <h2 class="text-3xl md:text-4xl font-bold text-center mb-4 text-white">Tính chỉ số BMI</h2>
+                    <div class="w-20 h-1 bg-primary mx-auto mb-12 rounded-full"></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                        <div class="bg-surface-dark p-8 rounded-lg border border-border-dark shadow-lg">
+                            <p class="text-gray-300 mb-6">Nhập số đo của bạn để kiểm tra chỉ số cơ thể (BMI).</p>
+                            <form class="space-y-6" id="bmi-form">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2" for="bmi-height">Chiều cao (m)</label>
+                                    <input class="w-full bg-background-dark border border-border-dark rounded-lg focus:ring-primary focus:border-primary px-4 py-2 text-white" id="bmi-height" placeholder="ví dụ: 1.75" type="number" step="0.01">
+                            </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-300 mb-2" for="bmi-weight">Cân nặng (kg)</label>
+                                    <input class="w-full bg-background-dark border border-border-dark rounded-lg focus:ring-primary focus:border-primary px-4 py-2 text-white" id="bmi-weight" placeholder="ví dụ: 68" type="number">
+                            </div>
+                                <button class="w-full bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors" type="button" id="bmi-calc-btn">Tính toán</button>
+                            <div id="bmi-result"></div>
+                            </form>
+                        </div>
+                        <div class="bg-surface-dark p-8 rounded-lg border border-border-dark shadow-lg">
+                            <h3 class="text-xl font-semibold text-white mb-2">Bảng phân loại BMI</h3>
+                            <p class="text-sm text-gray-300 mb-6">(Theo chuẩn WHO)</p>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="border-b border-border-dark">
+                                        <tr>
+                                            <th class="py-3 pr-4 font-semibold text-white">BMI</th>
+                                            <th class="py-3 pl-4 font-semibold text-white">Phân loại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-300">
+                                        <tr><td class="py-3 pr-4 border-b border-border-dark">&lt; 18.5</td><td class="py-3 pl-4 border-b border-border-dark">Dưới cân</td></tr>
+                                        <tr><td class="py-3 pr-4 border-b border-border-dark">18.5 – 24.9</td><td class="py-3 pl-4 border-b border-border-dark">Bình thường</td></tr>
+                                        <tr><td class="py-3 pr-4 border-b border-border-dark">25.0 – 29.9</td><td class="py-3 pl-4 border-b border-border-dark">Thừa cân</td></tr>
+                                        <tr><td class="py-3 pr-4">&gt; 30.0</td><td class="py-3 pl-4">Béo phì</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            </div>
+            <?php include __DIR__ . '/user/includes/footer.php'; ?>
+        </main>
+  </div> <!-- End page-wrapper -->
+    <?php else: ?>
+        <!-- Main content với Tailwind CSS -->
+        <main id="top" class="flex-1 px-4 sm:px-6 lg:px-8 py-10 sm:py-16 bg-background-dark lg:pt-28 pt-20">
+          <div class="max-w-7xl mx-auto flex flex-col gap-12 sm:gap-16">
+            <!-- Hero Section - Mobile First Design -->
+            <section class="relative w-full min-h-[calc(100vh-120px)] sm:min-h-[600px] lg:min-h-[700px] flex items-center justify-center overflow-hidden rounded-xl sm:rounded-2xl">
+              <!-- Blurred Background Image -->
+              <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style='background-image: url("assets/img/trangchu1.jpg"); filter: blur(3px); transform: scale(1.05);'></div>
+              
+              <!-- Dark Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-b from-background-dark/75 via-background-dark/70 to-background-dark/75"></div>
+              
+              <!-- Content Container -->
+              <div class="relative z-10 w-full max-w-2xl px-4 sm:px-6 lg:px-8 py-4 sm:py-12 lg:py-16 flex flex-col gap-2 sm:gap-6 lg:gap-8">
+                <!-- Mobile/Tablet: New Member Offers Tag -->
+                <div class="flex items-center justify-start sm:justify-center lg:hidden mb-0.5">
+                  <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20">
+                    <span class="w-1 h-1 rounded-full bg-primary"></span>
+                    <span class="text-white text-[10px] sm:text-sm font-semibold">Ưu đãi thành viên mới</span>
+                  </div>
+                </div>
+                
+                <!-- Main Headline -->
+                <h1 class="text-white text-2xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-black leading-tight tracking-tight text-left sm:text-center">
+                  <!-- Mobile/Tablet Version -->
+                  <span class="block lg:hidden">
+                    <span class="block text-2xl">Bắt đầu hành trình</span>
+                    <span class="block text-2xl">khỏe mạnh của bạn với</span>
+                    <span class="block mt-0.5">
+                      <span class="text-primary text-3xl">DFC</span>
+                      <span class="text-primary text-3xl"> Gym</span>
+                    </span>
+                  </span>
+                  <!-- Desktop Version (giống ảnh) -->
+                  <span class="hidden lg:block text-center">
+                    Tìm Sức Mạnh Của Bạn
+                  </span>
+                </h1>
+                
+                <!-- Sub-text -->
+                <div class="text-white/90 text-xs sm:text-lg lg:text-xl font-normal leading-relaxed text-left sm:text-center">
+                  <!-- Mobile/Tablet: Bullet Points -->
+                  <div class="flex flex-col gap-1 sm:gap-3 lg:hidden">
+                    <p class="flex items-start sm:items-center gap-1.5 text-xs leading-snug">
+                      <span class="text-primary mt-0.5 sm:mt-0 text-[10px]">•</span>
+                      <span>Thiết bị hiện đại</span>
+                    </p>
+                    <p class="flex items-start sm:items-center gap-1.5 text-xs leading-snug">
+                      <span class="text-primary mt-0.5 sm:mt-0 text-[10px]">•</span>
+                      <span>Huấn luyện viên chuyên nghiệp</span>
+                    </p>
+                    <p class="flex items-start sm:items-center gap-1.5 text-xs leading-snug">
+                      <span class="text-primary mt-0.5 sm:mt-0 text-[10px]">•</span>
+                      <span>Lộ trình khoa học. Chúng tôi giúp bạn trở nên bền bỉ, dẻo dai và tự tin.</span>
+                    </p>
+                </div>
+                  <!-- Desktop Version (giống ảnh) -->
+                  <p class="hidden lg:block max-w-3xl mx-auto">
+                    Khám phá các chương trình tập luyện đẳng cấp thế giới được thiết kế để giúp bạn đạt được mục tiêu thể hình, bất kể mục tiêu của bạn là gì.
+                  </p>
+              </div>
+                
+                <!-- CTA Buttons - Chỉ hiển thị trên Mobile/Tablet -->
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 lg:hidden">
+                  <!-- Primary Button: Đăng ký ngay -->
+                  <button type="button" class="group flex items-center justify-center gap-1.5 w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-5 rounded-full bg-primary hover:bg-primary-dark text-background-dark font-bold text-xs sm:text-base uppercase tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105" data-modal-target="register-modal">
+                    <span>Đăng ký ngay</span>
+                    <svg class="w-3.5 h-3.5 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                    </svg>
+                  </button>
+                  
+                  <!-- Secondary Button: Tìm hiểu thêm -->
+                  <button type="button" class="flex items-center justify-center w-full sm:w-auto px-5 sm:px-8 py-3 sm:py-5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white font-bold text-xs sm:text-base uppercase tracking-wide shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    Tìm hiểu thêm
+                  </button>
+                </div>
+                  </div>
+            </section>
+
+            <!-- Filter Buttons -->
+            <section class="flex flex-col gap-6">
+              <div class="flex flex-wrap items-center justify-center gap-3">
+                <button class="filter-btn flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary px-5 text-background-dark" data-filter="all">
+                  <p class="text-sm font-bold leading-normal">Tất cả</p>
+                </button>
+                <button class="filter-btn flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white/10 hover:bg-white/20 px-5 text-white/80 hover:text-white transition-colors" data-filter="strength">
+                  <p class="text-sm font-medium leading-normal">Sức mạnh</p>
+                </button>
+                <button class="filter-btn flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white/10 hover:bg-white/20 px-5 text-white/80 hover:text-white transition-colors" data-filter="cardio">
+                  <p class="text-sm font-medium leading-normal">Cardio</p>
+                </button>
+                <button class="filter-btn flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white/10 hover:bg-white/20 px-5 text-white/80 hover:text-white transition-colors" data-filter="mind-body">
+                  <p class="text-sm font-medium leading-normal">Tâm & Thể</p>
+                </button>
+                <button class="filter-btn flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white/10 hover:bg-white/20 px-5 text-white/80 hover:text-white transition-colors" data-filter="personal">
+                  <p class="text-sm font-medium leading-normal">Huấn luyện cá nhân</p>
+                </button>
+              </div>
+            </section>
+
+            <!-- Featured Program -->
+            <section class="flex flex-col gap-8">
+              <div class="flex flex-col items-stretch justify-start rounded-xl bg-white/5 shadow-lg overflow-hidden lg:flex-row lg:items-center">
+                <div class="w-full lg:w-1/2 bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/trangchu1.jpg");'></div>
+                <div class="flex w-full lg:w-1/2 grow flex-col items-start justify-center gap-4 p-6 sm:p-8">
+                  <span class="text-xs font-bold uppercase tracking-widest text-primary">Chương trình nổi bật</span>
+                  <h3 class="text-white text-2xl sm:text-3xl font-bold leading-tight tracking-[-0.015em]">HIIT Fusion</h3>
+                  <p class="text-white/70 text-base font-normal leading-normal">Lớp tập luyện cường độ cao ngắt quãng phổ biến nhất của chúng tôi, đảm bảo kết quả tối đa trong thời gian tối thiểu. Thành viên mới được tặng buổi tập đầu tiên miễn phí!</p>
+                  <button type="button" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-6 bg-primary text-background-dark text-base font-bold leading-normal tracking-[0.015em]" data-modal-target="register-modal">Tìm hiểu thêm</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- Program Cards Grid -->
+            <section id="dich-vu" class="scroll-mt-20">
+              <div class="mb-8 text-center">
+                <h2 class="text-white text-3xl sm:text-4xl font-bold mb-4">Chương trình tập luyện</h2>
+                <p class="text-white/70 text-lg max-w-2xl mx-auto">Khám phá các chương trình đa dạng được thiết kế để phù hợp với mọi mục tiêu thể hình của bạn.</p>
+                </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <!-- CrossFit -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="strength">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/tb1.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">CrossFit</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Xây dựng sức mạnh bùng nổ và sức bền với các động tác chức năng đa dạng, cường độ cao.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>60 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Cường độ cao</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">fitness_center</span><span>Sức mạnh</span></div>
+              </div>
+                  </div>
+                <div class="p-6 pt-0">
+                  <button class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                    <span class="truncate">Xem lịch tập</span>
+                  </button>
+                  </div>
+                  </div>
+
+              <!-- Power Yoga -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="mind-body">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/tb2.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Power Yoga</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Thực hiện các chuỗi động tác năng động để cải thiện tính linh hoạt, sức mạnh và sự minh mẫn.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>75 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Trung bình</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">self_improvement</span><span>Linh hoạt</span></div>
+                </div>
+              </div>
+                <div class="p-6 pt-0">
+                  <button class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                    <span class="truncate">Xem lịch tập</span>
+                  </button>
+                  </div>
+                  </div>
+
+              <!-- Spin Revolution -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="cardio">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/tb3.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Spin Revolution</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Đạp xe trong nhà năng lượng cao với huấn luyện viên truyền cảm hứng và danh sách nhạc sôi động.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>45 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Cường độ cao</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">directions_bike</span><span>Cardio</span></div>
+                  </div>
+                </div>
+                <div class="p-6 pt-0">
+                  <button class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                    <span class="truncate">Xem lịch tập</span>
+                  </button>
+              </div>
+              </div>
+
+              <!-- 1-on-1 Coaching -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="personal">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/hlv1.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Huấn luyện 1-1</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Nhận kế hoạch tập luyện cá nhân hóa và hướng dẫn chuyên gia để đẩy nhanh hành trình thể hình của bạn.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>60 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Tùy chỉnh</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">person</span><span>Cá nhân hóa</span></div>
+                  </div>
+                  </div>
+                <div class="p-6 pt-0">
+                  <button type="button" class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors" data-modal-target="register-modal">Đặt lịch</button>
+                  </div>
+                </div>
+
+              <!-- Combat Fit -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="strength">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/tb4.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Combat Fit</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Giải phóng chiến binh bên trong bạn với bài tập cardio và sức mạnh lấy cảm hứng từ boxing.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>50 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Cường độ cao</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">sports_mma</span><span>Combat</span></div>
+              </div>
+                </div>
+                <div class="p-6 pt-0">
+                  <button class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                    <span class="truncate">Xem lịch tập</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Core Sculpt -->
+              <div class="program-card flex flex-col rounded-xl bg-white/5 hover:bg-white/10 transition-colors shadow-lg overflow-hidden group" data-category="mind-body">
+                <div class="w-full bg-center bg-no-repeat aspect-video bg-cover" style='background-image: url("assets/img/tb5.jpg");'></div>
+                <div class="flex flex-col gap-4 p-6 flex-1">
+                  <h4 class="text-white text-xl font-bold leading-tight tracking-[-0.015em]">Core Sculpt</h4>
+                  <p class="text-white/70 text-sm font-normal leading-normal flex-1">Tăng cường sức mạnh cốt lõi của bạn với lớp Pilates tập trung vào sự ổn định và kiểm soát cốt lõi.</p>
+                  <div class="flex items-center gap-4 text-white/70 text-xs pt-2 border-t border-white/10">
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">timer</span><span>45 phút</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">local_fire_department</span><span>Cường độ thấp</span></div>
+                    <div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">self_improvement</span><span>Cốt lõi</span></div>
+                  </div>
+                </div>
+                <div class="p-6 pt-0">
+                  <button class="w-full flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 group-hover:bg-primary group-hover:text-background-dark text-white text-sm font-bold leading-normal tracking-[0.015em] transition-colors">
+                    <span class="truncate">Xem lịch tập</span>
+                  </button>
+                </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Thiết bị Section -->
+            <section id="thiet-bi" class="rounded-xl bg-white/5 p-8 sm:p-12 scroll-mt-20">
+              <div class="text-center mb-8">
+                <h2 class="text-white text-3xl sm:text-4xl font-bold mb-4">Thiết bị hiện đại</h2>
+                <p class="text-white/70 text-lg max-w-2xl mx-auto">Phòng tập được trang bị đầy đủ thiết bị tập luyện hiện đại, đa dạng từ cardio đến strength training.</p>
+                  </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">🏋️</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Máy tập sức mạnh</h3>
+                  <p class="text-white/70 text-sm">Đầy đủ thiết bị từ cơ bản đến chuyên nghiệp</p>
+                  </div>
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">🚴</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Cardio</h3>
+                  <p class="text-white/70 text-sm">Máy chạy bộ, xe đạp, máy elliptical đa dạng</p>
+                  </div>
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">💪</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Free weights</h3>
+                  <p class="text-white/70 text-sm">Tạ đơn, tạ đôi, barbell đầy đủ kích cỡ</p>
+                  </div>
+              </div>
+            </section>
+
+            <!-- HLV Section -->
+            <section id="hlv" class="rounded-xl bg-white/5 p-8 sm:p-12 scroll-mt-20">
+              <div class="text-center mb-8">
+                <h2 class="text-white text-3xl sm:text-4xl font-bold mb-4">Huấn luyện viên chuyên nghiệp</h2>
+                <p class="text-white/70 text-lg max-w-2xl mx-auto">Đội ngũ HLV giàu kinh nghiệm, được đào tạo bài bản, sẵn sàng hỗ trợ bạn đạt được mục tiêu thể hình.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white/5 rounded-lg p-6">
+                  <h3 class="text-white text-xl font-bold mb-2">Huấn luyện cá nhân</h3>
+                  <p class="text-white/70 text-sm mb-4">Chương trình tập luyện được thiết kế riêng cho từng cá nhân</p>
+                  <button type="button" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-primary text-background-dark text-sm font-bold" data-modal-target="register-modal">Đặt lịch ngay</button>
+                </div>
+                <div class="bg-white/5 rounded-lg p-6">
+                  <h3 class="text-white text-xl font-bold mb-2">Lớp nhóm</h3>
+                  <p class="text-white/70 text-sm mb-4">Tham gia các lớp học nhóm với không khí năng động</p>
+                  <a href="user/lichtap/schedule.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-4 bg-white/10 text-white text-sm font-bold">
+                    <span class="truncate">Xem lịch tập</span>
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            <!-- Liên hệ Section -->
+            <section id="lien-he" class="rounded-xl bg-white/5 p-8 sm:p-12 scroll-mt-20">
+              <div class="text-center mb-8">
+                <h2 class="text-white text-3xl sm:text-4xl font-bold mb-4">Liên hệ với chúng tôi</h2>
+                <p class="text-white/70 text-lg max-w-2xl mx-auto">Có câu hỏi? Chúng tôi luôn sẵn sàng hỗ trợ bạn!</p>
+                    </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">📞</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Hotline</h3>
+                  <p class="text-white/70 text-sm">1900 1234</p>
+                  </div>
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">📧</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Email</h3>
+                  <p class="text-white/70 text-sm">info@dfcgym.com</p>
+                    </div>
+                <div class="bg-white/5 rounded-lg p-6 text-center">
+                  <div class="text-4xl mb-4">📍</div>
+                  <h3 class="text-white text-xl font-bold mb-2">Địa chỉ</h3>
+                  <p class="text-white/70 text-sm">123 Đường ABC, Quận XYZ, TP.HCM</p>
+                  </div>
+                </div>
+            </section>
+
+            <!-- CTA Footer -->
+            <section class="rounded-xl bg-gradient-to-r from-primary/80 to-primary p-8 sm:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div class="text-center md:text-left">
+                <h2 class="text-background-dark text-3xl sm:text-4xl font-black tracking-[-0.033em] font-display">Sẵn sàng thay đổi?</h2>
+                <p class="text-background-dark/80 text-lg mt-2 max-w-2xl">Tham gia cộng đồng của chúng tôi ngay hôm nay và thực hiện bước đầu tiên hướng tới một bạn khỏe mạnh và mạnh mẽ hơn.</p>
+              </div>
+              <button type="button" class="flex-shrink-0 w-full md:w-auto flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-8 bg-background-dark text-white text-base font-bold leading-normal tracking-[0.015em]" data-modal-target="register-modal">Bắt đầu dùng thử miễn phí</button>
+            </section>
+          </div>
+        </main>
+    <?php endif; ?>
+  <?php if (isset($_SESSION['user'])): ?>
+  </div>
+  <?php endif; ?>
+  
+
+  <?php if (isset($_SESSION['user'])): ?>
+  <!-- Simple Modals - thay thế account-modal phức tạp -->
+  <?php include __DIR__ . '/user/includes/simple-modals.php'; ?>
+  <?php endif; ?>
+  
+  <?php if (!isset($_SESSION['user'])): ?>
+  <!-- Auth Modals - CHỈ cho trang chủ chưa đăng nhập -->
+  <?php include __DIR__ . '/user/includes/auth-modals.php'; ?>
+  
+    <!-- JavaScript cho trang chưa đăng nhập -->
+  <script src="assets/js/auth.js?v=9"></script>
+    <script>
+      // Smooth scroll for anchor links
+      document.addEventListener('DOMContentLoaded', function() {
+        // Smooth scroll behavior
+        document.documentElement.style.scrollBehavior = 'smooth';
+        
+        // Handle anchor links with smooth scroll (only for navigation links, not modal buttons)
+        const anchorLinks = document.querySelectorAll('a[href^="#"]:not([data-modal-target])');
+        anchorLinks.forEach(link => {
+          link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            // Skip if it's empty hash
+            if (!href || href === '#' || href === '') {
+              return;
+            }
+            
+            const targetId = href.substring(1);
+            
+            // Handle scroll to top
+            if (targetId === 'top') {
+              e.preventDefault();
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+              return;
+            }
+            
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+              e.preventDefault();
+              const headerOffset = 100;
+              const elementPosition = targetElement.getBoundingClientRect().top;
+              const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+              
+              window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+              });
+            }
+          });
+        });
+        
+        // Mobile Menu cho người chưa đăng nhập - sử dụng script đơn giản
+        function initGuestMobileMenu() {
+          const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+          const mobileMenu = document.getElementById('mobile-menu');
+          const mobileMenuClose = document.getElementById('mobile-menu-close');
+          
+          if (!mobileMenuToggle || !mobileMenu || !mobileMenuClose) {
+            return;
+          }
+          
+          // Toggle menu
+          mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            mobileMenu.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+          });
+          
+          // Close menu
+          mobileMenuClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            mobileMenu.classList.add('hidden');
+            document.body.style.overflow = '';
+          });
+          
+          // Close menu when clicking outside
+          mobileMenu.addEventListener('click', function(e) {
+            if (e.target === mobileMenu) {
+              mobileMenu.classList.add('hidden');
+              document.body.style.overflow = '';
+            }
+          });
+          
+          // Close mobile menu when clicking on links
+          const mobileMenuLinks = mobileMenu.querySelectorAll('a[href]:not([data-modal-target])');
+          mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', function() {
+              setTimeout(() => {
+                mobileMenu.classList.add('hidden');
+                document.body.style.overflow = '';
+              }, 300);
+            });
+          });
+        }
+        
+        // Initialize guest mobile menu
+        initGuestMobileMenu();
+        
+        // Program Filter Functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const programCards = document.querySelectorAll('.program-card');
+        
+        if (filterButtons.length > 0 && programCards.length > 0) {
+          filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+              // Remove active class from all buttons
+              filterButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-background-dark');
+                btn.classList.add('bg-white/10', 'text-white/80');
+                const pTag = btn.querySelector('p');
+                if (pTag) {
+                  pTag.classList.remove('font-bold');
+                  pTag.classList.add('font-medium');
+                }
+              });
+              
+              // Add active class to clicked button
+              this.classList.remove('bg-white/10', 'text-white/80');
+              this.classList.add('bg-primary', 'text-background-dark');
+              const pTag = this.querySelector('p');
+              if (pTag) {
+                pTag.classList.remove('font-medium');
+                pTag.classList.add('font-bold');
+              }
+              
+              // Get filter value
+              const filterValue = this.getAttribute('data-filter');
+              
+              // Filter cards
+              programCards.forEach(card => {
+                if (filterValue === 'all') {
+                  card.style.display = '';
+                                  } else {
+                  const cardCategory = card.getAttribute('data-category');
+                  if (cardCategory === filterValue) {
+                    card.style.display = '';
+                  } else {
+                    card.style.display = 'none';
+                  }
+                }
+              });
+            });
+          });
+        }
+        
+        // Close mobile menu when modal opens
+        // Listen for modal open event - chạy sau khi auth.js đã xử lý
+        // Sử dụng capture: false để chạy sau auth.js (auth.js dùng capture: true)
+        document.addEventListener('click', function(e) {
+          const modalButton = e.target.closest('[data-modal-target]');
+          if (modalButton) {
+            // Đợi một chút để auth.js xử lý trước
+          }
+        }, false); // Chạy sau auth.js
+      });
+    </script>
+  <?php else: ?>
+    <!-- JavaScript cho trang đã đăng nhập -->
+  <!-- Swiper CSS và JS - Phải load trước -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  
+  <script src="assets/js/flash-banner.js?v=3"></script>
+  
+  <!-- Auth Script - Phải load trước để xử lý modal -->
+  <script src="assets/js/auth.js?v=9"></script>
+  
+  <!-- Navigation Script - Phải load trước các script khác -->
+  <script src="assets/js/navigation.js?v=3"></script>
+  
+    <!-- Index Page Script - Phải load trước user-menu và account-modal -->
+  <script src="assets/js/scroll-fix.js?v=1"></script>
+  <script src="assets/js/index.js?v=5"></script>
+
+    <script src="assets/js/user-menu.js?v=4"></script>
+    
+    <!-- Đảm bảo user menu được khởi tạo -->
+    <script>
+      // Khởi tạo user menu sau khi script load xong
+      if (typeof initUserMenu === 'function') {
+        setTimeout(function() {
+          initUserMenu();
+        }, 300);
+      } else {
+        // Nếu function chưa có, đợi script load xong
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(function() {
+            if (typeof window.initUserMenu === 'function') {
+              window.initUserMenu();
+            }
+          }, 500);
+        });
+      }
+    </script>
+    
+    <!-- Inbox Modal Script -->
+    <script src="assets/js/inbox-modal-v2.js?v=1"></script>
+  
+  <!-- Account Modal Script -->
+    <script src="assets/js/account-modal.js?v=7"></script>
+    
+    <script>
+      // Khởi tạo Swiper cho Promo Banner Carousel
+      // Đợi cả DOM và Swiper library được load
+      let promoBannerSwiperInstance = null; // Đảm bảo chỉ khởi tạo một lần
+      
+      function initPromoBannerSwiper() {
+        // Nếu đã khởi tạo rồi thì không khởi tạo lại
+        if (promoBannerSwiperInstance) {
+          return;
+        }
+        
+        // Kiểm tra xem Swiper đã được load chưa
+        if (typeof Swiper === 'undefined') {
+          setTimeout(initPromoBannerSwiper, 100);
+          return;
+        }
+        
+        const promoBannerSwiper = document.querySelector('.promo-banner-swiper');
+        if (!promoBannerSwiper) {
+          return;
+        }
+        
+        // Kiểm tra xem element đã có Swiper instance chưa
+        if (promoBannerSwiper.swiper) {
+          promoBannerSwiperInstance = promoBannerSwiper.swiper;
+          return;
+        }
+        
+        // Cập nhật opacity và transform - responsive cho mobile và desktop
+        function updateSlideOpacity(swiperInstance) {
+          if (!swiperInstance || !swiperInstance.slides) return;
+          
+          // Kiểm tra kích thước màn hình
+          const isMobile = window.innerWidth < 768;
+          const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+          
+          swiperInstance.slides.forEach((slide) => {
+            const progress = slide.progress || 0;
+            const absProgress = Math.abs(progress);
+            
+            // Trên mobile: chỉ hiển thị slide active, ẩn các slide khác
+            if (isMobile) {
+              if (absProgress < 0.15) {
+                slide.style.opacity = '1';
+                slide.style.filter = 'brightness(1) blur(0)';
+                slide.style.zIndex = '10';
+                slide.style.transform = 'scale(1)';
+              } else {
+                slide.style.opacity = '0';
+                slide.style.filter = 'brightness(0.3) blur(4px)';
+                slide.style.zIndex = '1';
+                slide.style.transform = 'scale(0.9)';
+              }
+            }
+            // Trên tablet: hiển thị 2 slides với hiệu ứng nhẹ
+            else if (isTablet) {
+              if (absProgress < 0.15) {
+                slide.style.opacity = '1';
+                slide.style.filter = 'brightness(1) blur(0)';
+                slide.style.zIndex = '10';
+                slide.style.transform = 'scale(1) rotateY(0deg)';
+              } else if (absProgress < 0.8) {
+                slide.style.opacity = Math.max(0.4, 1 - absProgress * 1.5);
+                slide.style.filter = `brightness(${Math.max(0.3, 1 - absProgress * 1.5)}) blur(${absProgress * 3}px)`;
+                slide.style.zIndex = Math.max(3, 10 - Math.floor(absProgress * 5));
+                const rotateY = progress < 0 ? progress * 15 : progress * 15; // Nghiêng nhẹ 15 độ
+                slide.style.transform = `scale(${0.9 + absProgress * 0.1}) rotateY(${rotateY}deg)`;
+              } else {
+                slide.style.opacity = '0.2';
+                slide.style.filter = 'brightness(0.2) blur(6px)';
+                slide.style.zIndex = '1';
+                slide.style.transform = 'scale(0.85) rotateY(0deg)';
+              }
+            }
+            // Trên desktop: hiệu ứng 3D chéo đầy đủ
+            else {
+              if (absProgress < 0.15) {
+                slide.style.opacity = '1';
+                slide.style.filter = 'brightness(1) blur(0)';
+                slide.style.zIndex = '10';
+                slide.style.transform = 'scale(1) rotateY(0deg) translateZ(0)';
+              } else if (progress < 0) {
+                const rotateY = progress * 30;
+                const scale = 0.85 + (absProgress * 0.1);
+                slide.style.opacity = Math.max(0.3, 1 - absProgress * 1.2);
+                slide.style.filter = `brightness(${Math.max(0.2, 1 - absProgress * 1.2)}) blur(${absProgress * 4}px)`;
+                slide.style.zIndex = Math.max(3, 10 - Math.floor(absProgress * 5));
+                slide.style.transform = `scale(${scale}) rotateY(${rotateY}deg) translateZ(-${absProgress * 50}px)`;
+              } else {
+                const rotateY = progress * 30;
+                const scale = 0.85 + (absProgress * 0.1);
+                slide.style.opacity = Math.max(0.3, 1 - absProgress * 1.2);
+                slide.style.filter = `brightness(${Math.max(0.2, 1 - absProgress * 1.2)}) blur(${absProgress * 4}px)`;
+                slide.style.zIndex = Math.max(3, 10 - Math.floor(absProgress * 5));
+                slide.style.transform = `scale(${scale}) rotateY(${rotateY}deg) translateZ(-${absProgress * 50}px)`;
+              }
+            }
+          });
+        }
+        
+        promoBannerSwiperInstance = new Swiper('.promo-banner-swiper', {
+          slidesPerView: 1,
+          spaceBetween: 10,
+          centeredSlides: true,
+          loop: true,
+          loopAdditionalSlides: 1,
+          loopedSlides: 1,
+          watchSlidesProgress: true,
+          initialSlide: 0,
+          autoplay: {
+            delay: 5000,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+            waitForTransition: true,
+            reverseDirection: false, // Chuyển bình thường trên mobile
+          },
+          breakpoints: {
+            640: {
+              slidesPerView: 1.2,
+              spaceBetween: 20,
+              centeredSlides: true,
+            },
+            768: {
+              slidesPerView: 1.5,
+              spaceBetween: 30,
+              centeredSlides: true,
+            },
+            1024: {
+              slidesPerView: 'auto',
+              spaceBetween: 50,
+              centeredSlides: true,
+            },
+          },
+          pagination: {
+            el: '.promo-banner-pagination',
+            clickable: true,
+            dynamicBullets: true,
+          },
+          navigation: {
+            nextEl: '.promo-banner-next',
+            prevEl: '.promo-banner-prev',
+          },
+          grabCursor: true,
+          effect: 'slide',
+          speed: 1000,
+            on: {
+            init: function() {
+              console.log('Swiper initialized');
+              updateSlideOpacity(this);
+              // Đảm bảo autoplay chạy ngay sau khi init
+              setTimeout(() => {
+                if (this.autoplay) {
+                  if (!this.autoplay.running) {
+                    this.autoplay.start();
+                    console.log('Autoplay started in init callback');
+                  } else {
+                    console.log('Autoplay already running');
+                  }
+                } else {
+                  console.error('Autoplay not available');
+                }
+              }, 100);
+            },
+            resize: function() {
+              // Cập nhật lại khi resize để đảm bảo responsive
+              updateSlideOpacity(this);
+            },
+            autoplayStart: function() {
+              console.log('Autoplay started event');
+            },
+            autoplayStop: function() {
+              console.log('Autoplay stopped - restarting...');
+              // Tự động khởi động lại nếu bị dừng
+              setTimeout(() => {
+                if (this.autoplay && !this.autoplay.running) {
+                  this.autoplay.start();
+                  console.log('Autoplay restarted');
+                }
+              }, 100);
+            },
+          },
+        });
+        
+        // Cập nhật real-time khi slide di chuyển
+        promoBannerSwiperInstance.on('progress', function() {
+          updateSlideOpacity(this);
+        });
+        promoBannerSwiperInstance.on('setTransition', function() {
+          updateSlideOpacity(this);
+        });
+        promoBannerSwiperInstance.on('slideChange', function() {
+          updateSlideOpacity(this);
+        });
+        promoBannerSwiperInstance.on('slideChangeTransitionStart', function() {
+          updateSlideOpacity(this);
+        });
+        promoBannerSwiperInstance.on('slideChangeTransitionEnd', function() {
+          updateSlideOpacity(this);
+          // Đảm bảo autoplay vẫn chạy
+          if (this.autoplay && !this.autoplay.running) {
+            this.autoplay.start();
+          }
+        });
+        
+        // Khởi tạo ban đầu - đảm bảo autoplay chạy
+        setTimeout(function() {
+          updateSlideOpacity(promoBannerSwiperInstance);
+          // Đảm bảo autoplay chạy
+          if (promoBannerSwiperInstance && promoBannerSwiperInstance.autoplay) {
+            promoBannerSwiperInstance.autoplay.start();
+            console.log('Autoplay started manually');
+          }
+        }, 1500);
+      }
+      
+      // Khởi tạo khi DOM sẵn sàng - chỉ gọi một lần
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+          // Đợi Swiper library load xong
+          setTimeout(initPromoBannerSwiper, 200);
+        });
+      } else {
+        // DOM đã sẵn sàng, nhưng cần đợi Swiper library
+        setTimeout(initPromoBannerSwiper, 200);
+      }
+      
+      // Mobile Menu sẽ được xử lý bởi mobile-menu.js
+    </script>
+    
+    <script src="assets/js/modals-loader.js?v=3"></script>
+    
+    <!-- Mobile Menu Script - giống các trang khác -->
+    <?php if (isset($_SESSION['user'])): ?>
+      <script src="assets/js/mobile-menu.js?v=1"></script>
+    <?php endif; ?>
+    
+    <!-- Đảm bảo modal account không tự động mở khi trang load và menu hoạt động -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Đóng modal account nếu đang mở
+        const accountModal = document.getElementById('account-modal');
+        if (accountModal) {
+          accountModal.classList.remove('active');
+          accountModal.classList.add('hidden');
+        }
+        
+        // Xóa hash nếu có hash của account modal
+        const hash = window.location.hash;
+        if (hash && (hash === '#profile' || hash === '#my-packages' || 
+            hash === '#payment-history' || hash === '#payment-management' || 
+            hash === '#change-password' || hash === '#inbox')) {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+        
+      });
+    </script>
+  
+  <!-- Payment Method Form Tabs Script - Hoạt động với tất cả modal -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Tìm tất cả payment tabs trong tất cả modal
+      const paymentTypeTabs = document.querySelectorAll('.payment-type-tab');
+      const paymentFormSections = document.querySelectorAll('.payment-form-section');
+      const paymentTypeInput = document.getElementById('payment-type-input');
+      
+      function updateRequiredFields(activeType) {
+          // Remove required from all inputs
+          paymentFormSections.forEach(section => {
+              const inputs = section.querySelectorAll('input[required], select[required]');
+              inputs.forEach(input => input.removeAttribute('required'));
+          });
+          
+          // Add required to active section inputs
+          const activeSection = document.getElementById('form-' + activeType);
+          if (activeSection) {
+              const inputs = activeSection.querySelectorAll('input, select');
+              inputs.forEach(input => {
+                  // Skip checkbox
+                  if (input.type !== 'checkbox') {
+                      input.setAttribute('required', 'required');
+                  }
+              });
+          }
+      }
+      
+      if (paymentTypeTabs.length > 0) {
+          paymentTypeTabs.forEach(tab => {
+              tab.addEventListener('click', function() {
+                  const type = this.getAttribute('data-type');
+                  
+                  // Remove active class from all tabs
+                  paymentTypeTabs.forEach(t => {
+                      t.classList.remove('active');
+                      t.style.borderBottomColor = 'transparent';
+                      t.style.color = 'var(--text)';
+                  });
+                  
+                  // Add active class to clicked tab
+                  this.classList.add('active');
+                  this.style.borderBottomColor = 'var(--primary)';
+                  this.style.color = 'var(--primary)';
+                  
+                  // Hide all form sections
+                  paymentFormSections.forEach(section => {
+                      section.style.display = 'none';
+                      section.classList.remove('active');
+                  });
+                  
+                  // Show selected form section
+                  const targetSection = document.getElementById('form-' + type);
+                  if (targetSection) {
+                      targetSection.style.display = 'block';
+                      targetSection.classList.add('active');
+                  }
+                  
+                  // Update hidden input
+                  if (paymentTypeInput) {
+                      paymentTypeInput.value = type;
+                  }
+                  
+                  // Update required fields
+                  updateRequiredFields(type);
+              });
+          });
+          
+          // Set initial active tab style and required fields
+          const activeTab = document.querySelector('.payment-type-tab.active');
+          if (activeTab) {
+              activeTab.style.borderBottomColor = 'var(--primary)';
+              activeTab.style.color = 'var(--primary)';
+              const activeType = activeTab.getAttribute('data-type');
+              updateRequiredFields(activeType);
+          }
+      }
+      
+      // Handle form submission validation
+      const savePaymentForm = document.getElementById('save-payment-form');
+      if (savePaymentForm) {
+          savePaymentForm.addEventListener('submit', function(e) {
+              const activeSection = document.querySelector('.payment-form-section.active');
+              if (!activeSection) {
+                  e.preventDefault();
+                  alert('Vui lòng chọn loại phương thức thanh toán');
+                  return false;
+              }
+              
+              const type = paymentTypeInput ? paymentTypeInput.value : 'card';
+              
+              // Validate based on type
+              if (type === 'card') {
+                  // Tìm input trong modal hiện tại (có thể là account-modal hoặc payment-management-modal)
+                  const modal = savePaymentForm.closest('.modal-content');
+                  const cardNumberEl = modal ? modal.querySelector('#card-number-acc-modal, #card-number-payment-modal') : null;
+                  const cardNameEl = modal ? modal.querySelector('#card-name-acc-modal, #card-name-payment-modal') : null;
+                  const cardExpiryEl = modal ? modal.querySelector('#card-expiry-acc-modal, #card-expiry-payment-modal') : null;
+                  const cardCvcEl = modal ? modal.querySelector('#card-cvc-acc-modal, #card-cvc-payment-modal') : null;
+                  
+                  const cardNumber = cardNumberEl ? cardNumberEl.value.trim() : '';
+                  const cardName = cardNameEl ? cardNameEl.value.trim() : '';
+                  const cardExpiry = cardExpiryEl ? cardExpiryEl.value.trim() : '';
+                  const cardCvc = cardCvcEl ? cardCvcEl.value.trim() : '';
+                  
+                  if (!cardNumber || !cardName || !cardExpiry || !cardCvc) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin thẻ');
+                      return false;
+                  }
+              } else if (type === 'ewallet') {
+                  const modal = savePaymentForm.closest('.modal-content');
+                  const ewalletType = modal ? modal.querySelector('#ewallet-type-acc-modal, #ewallet-type-payment-modal')?.value.trim() : '';
+                  const ewalletAccount = modal ? modal.querySelector('#ewallet-account-acc-modal, #ewallet-account-payment-modal')?.value.trim() : '';
+                  
+                  if (!ewalletType || !ewalletAccount) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin ví điện tử');
+                      return false;
+                  }
+              } else if (type === 'bank') {
+                  const modal = savePaymentForm.closest('.modal-content');
+                  const bankNameEl = modal ? modal.querySelector('#bank-name-acc-modal, #bank-name-payment-modal') : null;
+                  const bankAccountEl = modal ? modal.querySelector('#bank-account-acc-modal, #bank-account-payment-modal') : null;
+                  const accountHolderEl = modal ? modal.querySelector('#account-holder-acc-modal, #account-holder-payment-modal') : null;
+                  
+                  const bankName = bankNameEl ? bankNameEl.value.trim() : '';
+                  const bankAccount = bankAccountEl ? bankAccountEl.value.trim() : '';
+                  const accountHolder = accountHolderEl ? accountHolderEl.value.trim() : '';
+                  
+                  if (!bankName || !bankAccount || !accountHolder) {
+                      e.preventDefault();
+                      alert('Vui lòng điền đầy đủ thông tin ngân hàng');
+                      return false;
+                  }
+              }
+          });
+      }
+  });
+  </script>
+  
+  <!-- Delete Payment Method Confirmation Script -->
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const deleteForms = document.querySelectorAll('.delete-payment-form');
+      deleteForms.forEach(function(form) {
+          form.addEventListener('submit', function(e) {
+              if (!confirm('Bạn có chắc chắn muốn xóa phương thức thanh toán này?')) {
+                  e.preventDefault();
+                  return false;
+              }
+          });
+      });
+  });
+  </script>
+  
+  <!-- Cancel Package Script -->
+  <script src="assets/js/cancel-package.js?v=3"></script>
+  <?php endif; ?>
+
+  <?php if (isset($_SESSION['user'])): ?>
+    <!-- Modal Hòm thư - chỉ cho user đã đăng nhập -->
+  <div class="modal-overlay hidden" id="inbox-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="inbox-modal-close" onclick="if(typeof closeInboxModal === 'function') closeInboxModal(); else document.getElementById('inbox-modal').classList.remove('active'); return false;"><i class="fas fa-times"></i></button>
+      
+      <div class="modal-header">
+        <a href="index.html" class="brand">
+          <img src="assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto">
+          <span><i class="fas fa-inbox"></i> Hòm thư</span>
+        </a>
+        <button id="mark-all-read-btn" onclick="if(typeof markAllInboxAsRead === 'function') markAllInboxAsRead();" 
+                title="Đánh dấu tất cả đã đọc"
+                class="mark-all-read-btn">
+          <i class="fas fa-check-double"></i>
+          <span class="mark-all-read-text">Đã đọc tất cả</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="muted center">
+          Xem thông báo, phản hồi hỗ trợ và cập nhật từ DFC Gym
+        </p>
+
+        <div class="inbox-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-total-count">0</div>
+            <div class="stat-label">Tổng số thông báo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-unread-count">0</div>
+            <div class="stat-label">Chưa đọc</div>
+          </div>
+        </div>
+
+        <div id="inbox-notifications-list">
+          <div class="empty-inbox">
+            <i class="fas fa-inbox"></i>
+            <p>Bạn chưa có thông báo nào</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Modal Hủy Gói Tập - chỉ cho user đã đăng nhập -->
+  <div class="modal-overlay hidden" id="cancel-package-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeCancelPackageModal()"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-exclamation-triangle"></i> Xác nhận hủy gói tập</h2>
+      </div>
+      <div class="modal-body">
+        <p>
+          Bạn có chắc chắn muốn hủy gói tập này? Hành động này không thể hoàn tác.
+        </p>
+        
+        <div>
+          <p><strong>Gói tập:</strong> <span id="cancel-package-name"></span></p>
+          <p><strong>Tiến độ:</strong> <span id="cancel-usage-info"></span></p>
+          <p id="cancel-refund-info">
+            <strong>Tiền hoàn lại:</strong> <span id="cancel-refund-amount"></span>
+          </p>
+        </div>
+        
+        <form method="POST" action="user/cancel_package.php" id="cancel-package-form">
+          <input type="hidden" name="dang_ky_id" id="cancel-dang-ky-id" value="">
+          
+          <div>
+            <button type="submit" class="btn">
+              <i class="fas fa-times"></i> Xác nhận hủy
+            </button>
+            <button type="button" class="btn ghost" onclick="closeCancelPackageModal()">
+              Hủy bỏ
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <?php endif; ?>
+
+</body>
+</html>
+

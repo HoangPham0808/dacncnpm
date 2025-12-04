@@ -1,0 +1,272 @@
+/* CSS MỚI TINH: Cho trang Gói tập */
+/* Font family cho trang packages */
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.package-section { padding-top: 40px; padding-bottom: 40px; }
+.package-grid {
+   display: grid;
+   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+   gap: 25px; /* Khoảng cách giữa các card */
+}
+.package-card {
+   /* Kế thừa từ .card .price nhưng thêm style riêng */
+   display: flex; /* Dùng flexbox để dễ căn chỉnh */
+   flex-direction: column;
+   text-align: center; /* Căn giữa nội dung */
+   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.package-card:hover {
+   transform: translateY(-5px);
+   box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+.package-card.highlight {
+   outline: 2px solid var(--primary); /* Giữ highlight */
+   box-shadow: 0 12px 28px rgba(34, 197, 94, .15);
+}
+.package-image {
+   width: 100%;
+   height: 180px; /* Chiều cao cố định cho ảnh */
+   object-fit: cover; /* Cắt ảnh vừa khung */
+   border-radius: 12px 12px 0 0; /* Bo góc trên */
+   margin-bottom: 15px;
+}
+.package-card h3 {
+    margin-top: 0; /* Reset margin */
+    font-size: 20px;
+}
+.package-card .money {
+    font-size: 26px; /* Hơi nhỏ hơn trang chủ */
+    margin: 5px 0 15px;
+}
+.package-card .ticks {
+    text-align: left; /* Căn trái list */
+    padding-left: 30px; /* Thụt lề trái */
+    margin-bottom: 20px;
+    flex-grow: 1; /* Đẩy nút xuống dưới cùng */
+}
+.package-card .btn {
+    margin-top: auto; /* Đảm bảo nút luôn ở dưới */
+    width: 80%; /* Nút không full width */
+    margin-left: auto;
+    margin-right: auto;
+}
+/* CSS cho Footer mới (Giữ nguyên) */
+    .footer-new { padding: 56px 0 0; background: var(--bg-2); color: var(--muted); border-top: 1px solid var(--border-color); }
+    .footer-new-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 32px; margin-bottom: 32px; }
+    .footer-new-col .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .footer-new-col .brand img { height: 120px; width: 120px; }
+    .footer-new-col .brand span { font-weight: 800; font-size: 20px; color: var(--text); }
+    .footer-new-col p { margin: 10px 0 0; font-size: 14px; line-height: 1.6; max-width: 400px; }
+    .footer-new-col h4 { margin: 0 0 12px; font-size: 16px; color: var(--text); }
+    .footer-new-col a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 8px; transition: color 0.2s ease; }
+    .footer-new-col a:hover { color: var(--primary); }
+    .footer-new-socials { display: flex; gap: 12px; margin-top: 16px; }
+    .footer-new-socials a { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-color); color: var(--text); text-decoration: none; font-weight: 600; }
+    .footer-new-socials a:hover { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .footer-new-bottom { padding: 22px 0; border-top: 1px solid var(--border-color); font-size: 14px; color: var(--muted); }
+    @media (max-width: 980px) { .footer-new-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 600px) { .footer-new-grid { grid-template-columns: 1fr; } }
+
+     /* CSS cho User Icon và Dropdown (Giữ nguyên) */
+    .user-menu-wrapper { position: relative; display: inline-block; margin-left: 15px; z-index: 10; }
+    .user-icon-button { background: none; border: none; color: var(--muted); font-size: 24px; cursor: pointer; padding: 5px; line-height: 1; transition: color 0.2s ease; position: relative; z-index: 11; pointer-events: auto; }
+    .user-icon-button:hover { color: var(--text); }
+    .user-dropdown { display: none; position: absolute; top: 100%; right: 0; background: var(--card); border: 1px solid var(--border-color); border-radius: 8px; min-width: 200px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; padding: 10px 0; }
+    .user-dropdown.active { display: block; }
+    .user-dropdown a { display: block; padding: 10px 20px; color: var(--muted); text-decoration: none; font-size: 15px; white-space: nowrap; }
+    .user-dropdown a:hover { background: var(--bg-2); color: var(--text); }
+    .user-dropdown a i { margin-right: 10px; width: 16px; text-align: center; }
+    .user-dropdown a.logout-link { color: var(--accent); border-top: 1px solid var(--border-color); margin-top: 5px; padding-top: 10px; }
+    .user-dropdown a.logout-link:hover { color: #fff; background: rgba(255, 48, 64, 0.2); }
+    .menu-panel .user-menu-wrapper { width: 100%; margin-left: 0; margin-top: 15px; border-top: 1px solid var(--border-color); padding-top: 15px; }
+    .menu-panel .user-dropdown a { padding: 12px 0; }
+
+     /* CSS cho thông báo lỗi/thành công trong Modal (Giữ nguyên) */
+     .auth-message { padding: 10px; border-radius: 8px; text-align: center; display: none; margin-bottom: 15px; font-size: 14px; }
+     .auth-message.error { color: var(--accent); background: rgba(255, 48, 64, .1); border: 1px solid var(--accent); display: block; }
+     .auth-message.success { color: var(--success); background: rgba(57, 217, 138, .1); border: 1px solid var(--success); display: block; }
+
+     /* Thêm chút padding cho nội dung chính */
+     .main-content-area { padding-top: var(--header-height); }
+
+     /* CSS MỚI TINH: Cho trang Gói tập */
+     .package-section { padding-top: 40px; padding-bottom: 40px; } /* Thêm padding trên/dưới */
+     .package-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Responsive grid */
+        gap: 25px; /* Khoảng cách giữa các card */
+     }
+     .package-card {
+        /* Kế thừa từ .card .price nhưng thêm style riêng */
+        display: flex; /* Dùng flexbox để dễ căn chỉnh */
+        flex-direction: column;
+        text-align: center; /* Căn giữa nội dung */
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+     }
+     .package-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+     }
+     .package-card.highlight {
+        outline: 2px solid var(--primary); /* Giữ highlight */
+        box-shadow: 0 12px 28px rgba(34, 197, 94, .15);
+     }
+     .package-image {
+        width: 100%;
+        height: 180px; /* Chiều cao cố định cho ảnh */
+        object-fit: cover; /* Cắt ảnh vừa khung */
+        border-radius: 12px 12px 0 0; /* Bo góc trên */
+        margin-bottom: 15px;
+     }
+     .package-card h3 {
+         margin-top: 0; /* Reset margin */
+         font-size: 20px;
+     }
+     .package-card .money {
+         font-size: 26px; /* Hơi nhỏ hơn trang chủ */
+         margin: 5px 0 15px;
+     }
+     .package-card .ticks {
+         text-align: left; /* Căn trái list */
+         padding-left: 30px; /* Thụt lề trái */
+         margin-bottom: 20px;
+         flex-grow: 1; /* Đẩy nút xuống dưới cùng */
+     }
+     .package-card .btn {
+         margin-top: auto; /* Đảm bảo nút luôn ở dưới */
+         width: 80%; /* Nút không full width */
+         margin-left: auto;
+         margin-right: auto;
+     }
+
+/* === RESPONSIVE CHO MOBILE === */
+@media (max-width: 768px) {
+    .package-section {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+    .package-grid {
+        gap: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+    .package-card {
+        padding: 18px;
+    }
+    .package-card h3 {
+        font-size: 18px;
+    }
+    .package-card .money {
+        font-size: 24px;
+    }
+    .package-image {
+        height: 160px;
+    }
+    .package-card .btn {
+        width: 85%;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .package-section {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+    .package-grid {
+        gap: 16px;
+        grid-template-columns: 1fr;
+    }
+    .package-card {
+        padding: 16px;
+    }
+    .package-card h3 {
+        font-size: 16px;
+    }
+    .package-card .money {
+        font-size: 22px;
+        margin: 4px 0 12px;
+    }
+    .package-image {
+        height: 150px;
+    }
+    .package-card .ticks {
+        padding-left: 25px;
+        margin-bottom: 16px;
+    }
+    .package-card .ticks li {
+        font-size: 13px;
+        margin: 4px 0;
+    }
+    .package-card .btn {
+        width: 90%;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+}
+
+/* CSS cho gói tập có khuyến mãi */
+.package-card[class*="border-yellow"] {
+    position: relative;
+    animation: pulse-border 2s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(234, 179, 8, 0);
+    }
+}
+
+.package-card[class*="border-yellow"]:hover {
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.5), 0 0 40px rgba(234, 179, 8, 0.3);
+    transform: translateY(-8px) scale(1.02);
+}
+
+/* Icon khuyến mãi trên viền */
+.package-card[class*="border-yellow"]::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.4);
+    animation: bounce-icon 2s ease-in-out infinite;
+}
+
+.package-card[class*="border-yellow"]::after {
+    content: '\f02b'; /* Font Awesome tag icon */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 18px;
+    z-index: 21;
+    animation: bounce-icon 2s ease-in-out infinite;
+}
+
+@keyframes bounce-icon {
+    0%, 100% {
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-5px);
+    }
+}

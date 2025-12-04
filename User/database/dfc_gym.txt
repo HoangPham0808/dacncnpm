@@ -1,0 +1,455 @@
+-- =============================================
+-- HỆ THỐNG QUẢN LÝ GYM - FULL DATABASE SCHEMA
+-- =============================================
+
+
+-- =============================================
+-- BẢNG PHÒNG TẬP
+-- =============================================
+CREATE TABLE phongtap (
+    phong_tap_id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_phong_tap VARCHAR(20) UNIQUE NOT NULL,
+    ten_phong_tap VARCHAR(150) NOT NULL,
+    dia_chi VARCHAR(255) NOT NULL,
+    so_dien_thoai VARCHAR(20),
+    email VARCHAR(100),
+    trang_thai ENUM('Hoạt động', 'Tạm ngưng', 'Đóng cửa') DEFAULT 'Hoạt động',
+    ngay_thanh_lap DATE,
+    ghi_chu VARCHAR(500),
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- TÀI KHOẢN
+-- =============================================
+CREATE TABLE TaiKhoan (
+    ten_dang_nhap VARCHAR(50) PRIMARY KEY,
+    mat_khau VARCHAR(255) NOT NULL,
+    loai_tai_khoan ENUM('Nhân viên', 'Khách hàng') NOT NULL,
+    trang_thai ENUM('Hoạt động', 'Khóa') DEFAULT 'Hoạt động',
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    lan_dang_nhap_cuoi DATETIME
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- NHÂN VIÊN
+-- =============================================
+CREATE TABLE NhanVien (
+    nhan_vien_id INT AUTO_INCREMENT PRIMARY KEY,
+    ten_dang_nhap VARCHAR(50) UNIQUE NOT NULL,
+    ho_ten VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    sdt VARCHAR(11),
+    cccd VARCHAR(12),
+    dia_chi VARCHAR(255),
+    ngay_sinh DATE,
+    gioi_tinh ENUM('Nam', 'Nữ', 'Khác'),
+    vai_tro ENUM('Admin', 'PR', 'Lễ Tân', 'PT') NOT NULL,
+    ngay_vao_lam DATE NOT NULL,
+    luong_co_ban DECIMAL(12,2),
+    trang_thai ENUM('Đang làm', 'Nghỉ phép', 'Đã nghỉ') DEFAULT 'Đang làm',
+    phong_tap_id INT null,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (ten_dang_nhap) REFERENCES TaiKhoan(ten_dang_nhap) ON DELETE CASCADE,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- KHÁCH HÀNG
+-- =============================================
+CREATE TABLE KhachHang (
+    khach_hang_id INT AUTO_INCREMENT PRIMARY KEY,
+    ten_dang_nhap VARCHAR(50) UNIQUE,
+    ho_ten VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    sdt VARCHAR(11),
+    cccd VARCHAR(12),
+    dia_chi VARCHAR(255),
+    ngay_sinh DATE,
+    gioi_tinh ENUM('Nam', 'Nữ', 'Khác'),
+    ngay_dang_ky DATE NOT NULL,
+    nguon_gioi_thieu VARCHAR(100),
+    trang_thai ENUM('Hoạt động', 'Khóa', 'Tạm ngưng') DEFAULT 'Hoạt động',
+    ghi_chu VARCHAR(500),
+    phong_tap_id INT,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (ten_dang_nhap) REFERENCES TaiKhoan(ten_dang_nhap) ON DELETE SET NULL,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- HỖ TRỢ / CSKH
+-- =============================================
+CREATE TABLE Hotro (
+    ho_tro_id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(100) NOT NULL,
+    so_dien_thoai VARCHAR(20) NOT NULL,
+    thoi_gian DATETIME DEFAULT CURRENT_TIMESTAMP,
+    content TEXT NOT NULL,
+    nhan_vien_id INT,
+    phan_hoi TEXT,
+    khach_hang_id INT,
+    trang_thai ENUM('Mới', 'Đang xử lý', 'Đã phản hồi', 'Đã đóng') DEFAULT 'Mới',
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ngay_cap_nhat DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (nhan_vien_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL,
+    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- GÓI TẬP
+-- =============================================
+CREATE TABLE GoiTap (
+    goi_tap_id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_goi_tap VARCHAR(20) UNIQUE NOT NULL,
+    ten_goi VARCHAR(100) NOT NULL,
+    mo_ta VARCHAR(500),
+    thoi_han_ngay INT NOT NULL,
+    gia_tien DECIMAL(12,2) NOT NULL,
+    loai_goi ENUM('Cơ bản', 'Nâng cao', 'VIP', 'PT cá nhân') NOT NULL,
+    trang_thai ENUM('Đang áp dụng', 'Ngừng áp dụng') DEFAULT 'Đang áp dụng',
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- KHUYẾN MÃI
+-- =============================================
+CREATE TABLE KhuyenMai (
+    khuyen_mai_id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_khuyen_mai VARCHAR(20) UNIQUE NOT NULL,
+    ten_khuyen_mai VARCHAR(200) NOT NULL,
+    mo_ta VARCHAR(500),
+    loai_giam ENUM('Phần trăm', 'Số tiền') NOT NULL,
+    gia_tri_giam DECIMAL(12,2) NOT NULL,
+    giam_toi_da DECIMAL(12,2),
+    gia_tri_don_hang_toi_thieu DECIMAL(12,2),
+    ap_dung_cho_goi_tap_id INT,
+    ngay_bat_dau DATE NOT NULL,
+    ngay_ket_thuc DATE NOT NULL,
+    so_luong_ma INT,
+    so_luong_da_dung INT DEFAULT 0,
+    trang_thai ENUM('Đang áp dụng', 'Hết hạn', 'Tạm dừng') DEFAULT 'Đang áp dụng',
+    nhan_vien_tao_id INT,
+    FOREIGN KEY (ap_dung_cho_goi_tap_id) REFERENCES GoiTap(goi_tap_id) ON DELETE SET NULL,
+    FOREIGN KEY (nhan_vien_tao_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- HÓA ĐƠN
+-- =============================================
+CREATE TABLE HoaDon (
+    hoa_don_id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_hoa_don VARCHAR(20) UNIQUE NOT NULL,
+    khach_hang_id INT,
+    khuyen_mai_id INT,
+    ngay_lap DATE NOT NULL,
+    tong_tien DECIMAL(12,2) NOT NULL,
+    giam_gia_khuyen_mai DECIMAL(12,2) DEFAULT 0,
+    giam_gia_khac DECIMAL(12,2) DEFAULT 0,
+    tien_thanh_toan DECIMAL(12,2) NOT NULL,
+    phuong_thuc_thanh_toan ENUM('Tiền mặt', 'Chuyển khoản', 'Thẻ', 'Ví điện tử') NOT NULL,
+    trang_thai ENUM('Chờ thanh toán', 'Đã thanh toán', 'Hủy') DEFAULT 'Chờ thanh toán',
+    nhan_vien_lap_id INT,
+    ghi_chu VARCHAR(500),
+    phong_tap_id INT,
+    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE SET NULL,
+    FOREIGN KEY (khuyen_mai_id) REFERENCES KhuyenMai(khuyen_mai_id) ON DELETE SET NULL,
+    FOREIGN KEY (nhan_vien_lap_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- CHI TIẾT HÓA ĐƠN
+-- =============================================
+CREATE TABLE ChiTietHoaDon (
+    chi_tiet_id INT AUTO_INCREMENT PRIMARY KEY,
+    hoa_don_id INT,
+    goi_tap_id INT,
+    ten_goi VARCHAR(100) NOT NULL,
+    so_luong INT DEFAULT 1,
+    don_gia DECIMAL(12,2) NOT NULL,
+    thanh_tien DECIMAL(12,2) NOT NULL,
+    FOREIGN KEY (hoa_don_id) REFERENCES HoaDon(hoa_don_id) ON DELETE SET NULL,
+    FOREIGN KEY (goi_tap_id) REFERENCES GoiTap(goi_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- ĐĂNG KÝ GÓI TẬP
+-- =============================================
+CREATE TABLE DangKyGoiTap (
+    dang_ky_id INT AUTO_INCREMENT PRIMARY KEY,
+    khach_hang_id INT,
+    goi_tap_id INT,
+    hoa_don_id INT,
+    ngay_dang_ky DATE NOT NULL,
+    ngay_bat_dau DATE NOT NULL,
+    ngay_ket_thuc DATE NOT NULL,
+    tong_tien DECIMAL(12,2) NOT NULL,
+    trang_thai ENUM('Đang hoạt động', 'Hết hạn', 'Hủy') DEFAULT 'Đang hoạt động',
+    nhan_vien_kich_hoat_id INT,
+    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE SET NULL,
+    FOREIGN KEY (goi_tap_id) REFERENCES GoiTap(goi_tap_id) ON DELETE SET NULL,
+    FOREIGN KEY (hoa_don_id) REFERENCES HoaDon(hoa_don_id) ON DELETE SET NULL,
+    FOREIGN KEY (nhan_vien_kich_hoat_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- LỊCH TẬP
+-- =============================================
+CREATE TABLE LichTap (
+    lich_tap_id INT AUTO_INCREMENT PRIMARY KEY,
+    ten_lop VARCHAR(100) NOT NULL,
+    mo_ta VARCHAR(500),
+    nhan_vien_pt_id INT,
+    ngay_tap DATE NOT NULL,
+    gio_bat_dau TIME NOT NULL,
+    gio_ket_thuc TIME NOT NULL,
+    so_luong_toi_da INT DEFAULT 20,
+    phong VARCHAR(50),
+    trang_thai ENUM('Đang mở', 'Đã đầy', 'Hủy') DEFAULT 'Đang mở',
+    phong_tap_id INT,
+    FOREIGN KEY (nhan_vien_pt_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- ĐĂNG KÝ LỊCH TẬP
+-- =============================================
+CREATE TABLE DangKyLichTap (
+    dang_ky_lich_id INT AUTO_INCREMENT PRIMARY KEY,
+    khach_hang_id INT,
+    lich_tap_id INT,
+    ngay_dang_ky DATETIME DEFAULT CURRENT_TIMESTAMP,
+    trang_thai ENUM('Đã đăng ký', 'Đã tham gia', 'Vắng mặt', 'Hủy') DEFAULT 'Đã đăng ký',
+    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE SET NULL,
+    FOREIGN KEY (lich_tap_id) REFERENCES LichTap(lich_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- THIẾT BỊ
+-- =============================================
+CREATE TABLE ThietBi (
+    thiet_bi_id INT AUTO_INCREMENT PRIMARY KEY,
+    ma_thiet_bi VARCHAR(20) UNIQUE NOT NULL,
+    ten_thiet_bi VARCHAR(100) NOT NULL,
+    loai_thiet_bi VARCHAR(50),
+    ngay_mua DATE,
+    gia_mua DECIMAL(12,2),
+    nha_cung_cap VARCHAR(200),
+    vi_tri VARCHAR(100),
+    trang_thai ENUM('Đang sử dụng', 'Bảo trì', 'Hỏng', 'Thanh lý') DEFAULT 'Đang sử dụng',
+    ghi_chu VARCHAR(500),
+    phong_tap_id INT,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- BẢO TRÌ THIẾT BỊ
+-- =============================================
+CREATE TABLE BaoTriThietBi (
+    bao_tri_id INT AUTO_INCREMENT PRIMARY KEY,
+    thiet_bi_id INT,
+    ngay_bao_tri DATE NOT NULL,
+    loai_bao_tri ENUM('Định kỳ', 'Sửa chữa', 'Kiểm tra') NOT NULL,
+    mo_ta VARCHAR(500),
+    chi_phi DECIMAL(12,2),
+    nhan_vien_thuc_hien_id INT,
+    trang_thai ENUM('Đã hoàn thành', 'Đang thực hiện', 'Chờ xử lý') DEFAULT 'Chờ xử lý',
+    FOREIGN KEY (thiet_bi_id) REFERENCES ThietBi(thiet_bi_id) ON DELETE SET NULL,
+    FOREIGN KEY (nhan_vien_thuc_hien_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- CHECK-IN / CHECK-OUT
+-- =============================================
+CREATE TABLE LichSuRaVao (
+    lich_su_id INT AUTO_INCREMENT PRIMARY KEY,
+    ten_dang_nhap VARCHAR(50) NOT NULL,
+    loai_tai_khoan ENUM('Khách hàng', 'Nhân viên') NOT NULL,
+    thoi_gian_vao DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- ĐÁNH GIÁ / FEEDBACK
+-- =============================================
+CREATE TABLE DanhGia (
+    danh_gia_id INT AUTO_INCREMENT PRIMARY KEY,
+    khach_hang_id INT,
+    loai_danh_gia ENUM('Dịch vụ', 'Thiết bị', 'Huấn luyện viên', 'Gói tập', 'Tổng thể') NOT NULL,
+    nhan_vien_pt_id INT,
+    thiet_bi_id INT,
+    goi_tap_id INT,
+    diem_danh_gia INT CHECK (diem_danh_gia BETWEEN 1 AND 5),
+    noi_dung VARCHAR(1000),
+    ngay_danh_gia DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (khach_hang_id) REFERENCES KhachHang(khach_hang_id) ON DELETE SET NULL,
+    FOREIGN KEY (nhan_vien_pt_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL,
+    FOREIGN KEY (thiet_bi_id) REFERENCES ThietBi(thiet_bi_id) ON DELETE SET NULL,
+    FOREIGN KEY (goi_tap_id) REFERENCES GoiTap(goi_tap_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- CHẤM CÔNG
+-- =============================================
+CREATE TABLE ChamCong (
+    cham_cong_id INT AUTO_INCREMENT PRIMARY KEY,
+    nhan_vien_id INT,
+    ngay_cham_cong DATE NOT NULL,
+    gio_vao TIME,
+    gio_ra TIME,
+    so_gio_lam DECIMAL(5,2),
+    trang_thai ENUM('Có mặt', 'Vắng mặt', 'Nghỉ phép', 'Đi muộn') DEFAULT 'Có mặt',
+    ghi_chu VARCHAR(500),
+    UNIQUE KEY uq_nhanvien_ngay (nhan_vien_id, ngay_cham_cong),
+    FOREIGN KEY (nhan_vien_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- =============================================
+-- BẢNG LƯƠNG
+-- =============================================
+CREATE TABLE BangLuong (
+    bang_luong_id INT AUTO_INCREMENT PRIMARY KEY,
+    nhan_vien_id INT,
+    thang INT CHECK (thang BETWEEN 1 AND 12),
+    nam INT CHECK (nam >= 2000),
+    luong_co_ban DECIMAL(12,2) NOT NULL,
+    phu_cap DECIMAL(12,2) DEFAULT 0,
+    thuong DECIMAL(12,2) DEFAULT 0,
+    khau_tru DECIMAL(12,2) DEFAULT 0,
+    thuc_linh DECIMAL(12,2) NOT NULL,
+    ngay_thanh_toan DATE,
+    trang_thai ENUM('Chưa thanh toán', 'Đã thanh toán') DEFAULT 'Chưa thanh toán',
+    ghi_chu VARCHAR(500),
+    UNIQUE KEY uq_nhanvien_thangnam (nhan_vien_id, thang, nam),
+    FOREIGN KEY (nhan_vien_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ===========================================================
+-- ⭐ CÁC BẢNG THỐNG KÊ UC13.x
+-- ===========================================================
+
+-- UC13.1: Thống kê doanh thu theo thời gian
+CREATE TABLE ThongKeDoanhThu (
+    tk_dt_id INT AUTO_INCREMENT PRIMARY KEY,
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    tong_doanh_thu DECIMAL(14,2) NOT NULL,
+    so_hoa_don INT,
+    phong_tap_id INT,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+);
+
+-- UC13.2: Thống kê khách hàng mới
+CREATE TABLE ThongKeKhachHangMoi (
+    tk_kh_id INT AUTO_INCREMENT PRIMARY KEY,
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    so_khach_moi INT NOT NULL,
+    phong_tap_id INT,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+);
+
+-- UC13.3: Thống kê hiệu suất nhân viên
+CREATE TABLE ThongKeHieuSuatNhanVien (
+    tk_nv_id INT AUTO_INCREMENT PRIMARY KEY,
+    nhan_vien_id INT,
+    so_khach_phuc_vu INT DEFAULT 0,
+    so_goi_ban INT DEFAULT 0,
+    so_ca_lam INT DEFAULT 0,
+    danh_gia_trung_binh DECIMAL(3,2),
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (nhan_vien_id) REFERENCES NhanVien(nhan_vien_id) ON DELETE SET NULL
+);
+
+-- UC13.4: Thống kê tình trạng thiết bị
+CREATE TABLE ThongKeThietBi (
+    tk_tb_id INT AUTO_INCREMENT PRIMARY KEY,
+    thiet_bi_id INT,
+    so_lan_bao_tri INT DEFAULT 0,
+    so_lan_hong INT DEFAULT 0,
+    ti_le_su_dung DECIMAL(5,2),
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (thiet_bi_id) REFERENCES ThietBi(thiet_bi_id) ON DELETE SET NULL
+);
+
+-- UC13.5: Thống kê gói tập bán chạy
+CREATE TABLE ThongKeGoiTapBanChay (
+    tk_gt_id INT AUTO_INCREMENT PRIMARY KEY,
+    goi_tap_id INT,
+    so_luong_ban INT NOT NULL,
+    doanh_thu DECIMAL(14,2),
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (goi_tap_id) REFERENCES GoiTap(goi_tap_id) ON DELETE SET NULL
+);
+
+-- UC13.7: Thống kê doanh thu theo phòng tập
+CREATE TABLE ThongKeDoanhThuPhongTap (
+    tk_dtp_id INT AUTO_INCREMENT PRIMARY KEY,
+    phong_tap_id INT,
+    thoi_gian_tu DATE NOT NULL,
+    thoi_gian_den DATE NOT NULL,
+    tong_doanh_thu DECIMAL(14,2),
+    so_hoa_don INT,
+    ngay_tao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (phong_tap_id) REFERENCES phongtap(phong_tap_id) ON DELETE SET NULL
+);
+
+-- 2. Tạo tài khoản admin
+INSERT INTO TaiKhoan (ten_dang_nhap, mat_khau, loai_tai_khoan, trang_thai)
+VALUES (
+    'admin',
+    'admin123',      -- mật khẩu dạng thuần
+    'Nhân viên',
+    'Hoạt động'
+);
+
+-- 3. Tạo nhân viên admin
+INSERT INTO NhanVien (
+    ten_dang_nhap, ho_ten, email, sdt, cccd, dia_chi, ngay_sinh, gioi_tinh,
+    vai_tro, ngay_vao_lam, luong_co_ban, trang_thai, phong_tap_id
+) VALUES (
+    'admin',
+    'Quản trị hệ thống',
+    'admin@gym.com',
+    '0900000000',
+    '012345678901',
+    '123 Đường Chính, Thành phố',
+    '1990-01-01',
+    'Nam',
+    'Admin',
+    '2024-01-01',
+    20000000,
+    'Đang làm',
+    null
+);
+
+

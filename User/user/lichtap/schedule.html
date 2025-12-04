@@ -1,0 +1,1525 @@
+<?php
+// Luôn bắt đầu session ở dòng đầu tiên
+// SỬA LỖI: Chỉ gọi session_start nếu chưa có session
+if (session_status() === PHP_SESSION_NONE) {
+session_start();
+}
+
+// Thêm headers để ngăn cache, đảm bảo dữ liệu luôn được cập nhật mới nhất
+header("Cache-Control: no-cache, no-store, must-revalidate");
+header("Pragma: no-cache");
+header("Expires: 0");
+?>
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lịch tập lớp nhóm - DFC GYM</title>
+  <meta name="description" content="Xem lịch tập các lớp nhóm tại DFC Gym">
+  <link rel="icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="shortcut icon" type="image/png" href="../../assets/img/logo.png">
+  <link rel="apple-touch-icon" href="../../assets/img/logo.png">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography" onerror="console.error('Tailwind CDN failed to load'); this.onerror=null; this.src='https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/lib/index.min.js';"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/schedule.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/css/schedule-inline.css">
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#22c55e",
+            "primary-dark": "#16a34a",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102213",
+          },
+          fontFamily: {
+            "display": ["Lexend", "sans-serif"]
+          },
+          borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+        },
+      },
+    };
+  </script>
+</head>
+
+<body data-logged-in="<?php echo isset($_SESSION['user']) ? 'true' : 'false'; ?>" class="dark bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 antialiased">
+
+  <?php if (isset($_SESSION['user'])): ?>
+    <!-- Header Desktop cho người đã đăng nhập - chỉ hiển thị trên PC -->
+    <header class="hidden lg:flex items-center justify-between whitespace-nowrap border-b border-solid border-white/10 px-6 sm:px-10 lg:px-20 py-4 fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+        <h2 class="nameweb text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <nav class="flex items-center gap-9">
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../../index.html">Trang chủ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../goitap/packages.html">Gói tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="schedule.html">Lịch tập</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../hotro/support.html">Hỗ trợ</a>
+        <a class="text-white/80 hover:text-white transition-colors text-sm font-medium leading-normal" href="../danhgia/review.html">Đánh giá</a>
+      </nav>
+      <div class="flex items-center gap-3">
+        <span class="text-white/80 text-sm font-medium">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</span>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html" class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-12 px-5 bg-primary text-background-dark text-sm font-bold leading-normal tracking-[0.015em]">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper relative">
+          <button class="user-icon-button p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10" id="user-menu-button">
+            <i class="fas fa-user-circle text-xl"></i>
+          </button>
+          <div class="user-dropdown hidden absolute top-full right-0 mt-2 bg-background-dark border border-white/10 rounded-lg shadow-lg min-w-[200px] z-50" id="user-dropdown-menu">
+            <a href="#profile" data-modal-target="profile-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-user-edit mr-2"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-inbox mr-2"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-box mr-2"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-history mr-2"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-credit-card mr-2"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="block px-4 py-2 text-white/80 hover:text-white hover:bg-white/10"><i class="fas fa-key mr-2"></i> Đổi mật khẩu</a>
+            <a href="../getset/logout.php" class="block px-4 py-2 text-red-400 hover:text-red-300 hover:bg-white/10"><i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Mobile Header với Logo và Menu Button - chỉ hiển thị trên mobile/tablet -->
+    <header class="lg:hidden fixed top-0 left-0 right-0 z-50 bg-background-dark/80 backdrop-blur-sm border-b border-solid border-white/10 px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2 text-white">
+        <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-12 w-auto self-center">
+        <h2 class="nameweb text-white text-lg font-bold leading-none self-center">DFC GYM</h2>
+      </div>
+      <button id="mobile-menu-toggle" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+    </header>
+    <!-- Mobile Menu cho người đã đăng nhập - chỉ hiển thị trên mobile/tablet -->
+    <div id="mobile-menu" class="hidden lg:hidden fixed inset-0 z-50 bg-background-dark/95 backdrop-blur-sm">
+      <div class="flex flex-col h-full">
+        <div class="flex items-center justify-between p-6 border-b border-white/10">
+          <div class="flex items-center gap-2 text-white">
+            <img src="../../assets/img/logo.png" alt="DFC Gym" class="h-14 w-auto self-center">
+            <h2 class="nameweb nameweb-mobile text-white text-xl font-bold leading-none self-center">DFC GYM</h2>
+          </div>
+          <button id="mobile-menu-close" class="p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10">
+            <span class="material-symbols-outlined text-2xl">close</span>
+          </button>
+        </div>
+        <nav class="flex flex-col gap-4 p-6 flex-1 overflow-y-auto">
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../../index.html">Trang chủ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../goitap/packages.html">Gói tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../khuyenmai/promotions.php">Khuyến mãi</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="schedule.html">Lịch tập</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../hotro/support.html">Hỗ trợ</a>
+          <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../danhgia/review.html">Đánh giá</a>
+          <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+            <a class="text-white/80 hover:text-white transition-colors text-base font-medium py-2" href="../admin/index.html">Vào Admin</a>
+          <?php endif; ?>
+          <div class="flex flex-col gap-2 mt-auto pt-6 border-t border-white/10">
+            <div class="text-white/80 text-sm mb-2">Chào, <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>!</div>
+            <a href="#profile" data-modal-target="profile-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+            <a href="#inbox" data-modal-target="inbox-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-inbox"></i> Hòm thư</a>
+            <a href="#my-packages" data-modal-target="my-packages-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-box"></i> Gói tập của bạn</a>
+            <a href="#payment-history" data-modal-target="payment-history-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+            <a href="#payment-management" data-modal-target="payment-management-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+            <a href="#change-password" data-modal-target="change-password-modal" class="text-white/80 hover:text-white transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+            <a href="../getset/logout.php" class="text-red-400 hover:text-red-300 transition-colors text-base font-medium py-2 flex items-center gap-2"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  <?php else: ?>
+    <!-- Header cho người chưa đăng nhập -->
+    <header class="header">
+      <div class="container nav">
+        <a class="brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="logo">
+          <span>DFC GYM</span>
+        </a>
+        <nav class="menu desktop-nav">
+          <a href="../../index.html#gioi-thieu" class="nav-link">Giới thiệu</a>
+          <a href="../../index.html#dich-vu" class="nav-link">Dịch vụ</a>
+          <a href="../../index.html#thiet-bi" class="nav-link">Thiết bị</a>
+          <a href="../../index.html#hlv" class="nav-link">HLV</a>
+          <a href="../khuyenmai/promotions.php" class="nav-link">Khuyến mãi</a>
+          <a href="../../index.html#dang-nhap" class="btn">Đăng nhập</a>
+        </nav>
+        <button class="menu-toggle" aria-label="Mở menu" aria-expanded="false" aria-controls="main-menu">
+          <span class="bar"></span> <span class="bar"></span> <span class="bar"></span>
+        </button>
+      </div>
+    </header>
+  <?php endif; ?>
+  
+  <div class="menu-overlay" id="menu-overlay"></div>
+  <div class="page-wrapper" id="page-wrapper">
+    <?php if (isset($_SESSION['user'])): ?>
+      <div class="lg:pt-28 pt-20">
+    <?php endif; ?>
+    <nav class="menu-panel" id="main-menu">
+      <div class="menu-header">
+        <a class="menu-brand" href="../../index.html">
+          <img src="../../assets/img/logo.png" alt="DFC Gym" class="menu-logo">
+          <span>DFC GYM</span>
+        </a>
+      </div>
+       <?php if (isset($_SESSION['user'])): ?>
+        <span class="menu-user-name">
+          <?php echo htmlspecialchars($_SESSION['user']['full_name'] ?? $_SESSION['user']['username']); ?>
+        </span>
+        <a href="../../index.html">Trang chủ</a>
+        <a href="../goitap/packages.html">Gói tập của tôi</a>
+        <a href="schedule.html">Lịch tập</a> <a href="../hotro/support.html">Hỗ trợ</a>
+        <a href="../danhgia/review.html">Đánh giá dịch vụ</a>
+        <?php if ($_SESSION['user']['role'] === 'admin'): ?>
+          <a href="../admin/index.html">Vào Admin</a>
+        <?php endif; ?>
+        <div class="user-menu-wrapper">
+             <a href="#profile" data-modal-target="profile-modal"><i class="fas fa-user-edit"></i> Thông tin tài khoản</a>
+             <a href="#inbox" data-modal-target="inbox-modal"><i class="fas fa-inbox"></i> Hòm thư</a>
+             <a href="#my-packages" data-modal-target="my-packages-modal"><i class="fas fa-box"></i> Gói tập của bạn</a>
+             <a href="#payment-history" data-modal-target="payment-history-modal"><i class="fas fa-history"></i> Lịch sử thanh toán</a>
+             <a href="#payment-management" data-modal-target="payment-management-modal"><i class="fas fa-credit-card"></i> Quản lý thanh toán</a>
+             <a href="#change-password" data-modal-target="change-password-modal"><i class="fas fa-key"></i> Đổi mật khẩu</a>
+             <a href="../getset/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        </div>
+      <?php else: ?>
+        <a href="../../index.html#gioi-thieu">Giới thiệu</a>
+        <a href="../../index.html#dich-vu">Dịch vụ</a>
+        <a href="../../index.html#thiet-bi">Thiết bị</a>
+        <a href="../../index.html#hlv">HLV</a>
+        <a href="../khuyenmai/promotions.php">Khuyến mãi</a>
+        <a href="../../index.html#dang-nhap" class="btn" id="login-button-mobile">Đăng nhập</a>
+      <?php endif; ?>
+    </nav>
+
+    <main class="main-content-area">
+        <script src="../../assets/js/flash-banner.js?v=2"></script>
+        
+        <section id="schedule-section" class="section">
+          <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+            <div class="text-center max-w-3xl mx-auto">
+              <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+                Lịch tập lớp nhóm
+              </h1>
+              <div class="w-24 h-1.5 bg-primary mx-auto mt-4 rounded"></div>
+              <p class="mt-6 text-lg text-gray-600 dark:text-gray-400">
+                Tham gia các lớp học đa dạng tại DFC Gym để tăng cường sức khỏe và kết nối cộng đồng. Lịch tập có thể thay đổi, vui lòng cập nhật thường xuyên.
+              </p>
+            </div>
+
+            <?php
+            // Hiển thị thông tin gói tập và lớp đã đăng ký nếu user đã đăng nhập
+            if (isset($_SESSION['user'])) {
+                try {
+                    @require_once __DIR__ . '/../../database/config.php';
+                    @require_once __DIR__ . '/../../database/db_connect.php';
+                    
+                    if (isset($pdo)) {
+                        $username = $_SESSION['user']['username'];
+                        $stmt = $pdo->prepare("SELECT khach_hang_id FROM KhachHang WHERE ten_dang_nhap = :username LIMIT 1");
+                        $stmt->execute([':username' => $username]);
+                        $khachHang = $stmt->fetch();
+                        
+                        if ($khachHang) {
+                            $khach_hang_id = $khachHang['khach_hang_id'];
+                            
+                            // Lấy phong_tap_id của khách hàng để filter lịch tập
+                            // Lấy từ query chính để tránh query thừa
+                            // $phong_tap_id đã được lấy ở trên từ query SELECT khach_hang_id, phong_tap_id
+                            // Nếu chưa có, lấy lại
+                            if (!isset($phong_tap_id)) {
+                                $stmt_phongtap = $pdo->prepare("SELECT phong_tap_id FROM KhachHang WHERE khach_hang_id = :kh_id LIMIT 1");
+                                $stmt_phongtap->execute([':kh_id' => $khach_hang_id]);
+                                $phongTapInfo = $stmt_phongtap->fetch();
+                                // Đảm bảo phong_tap_id là integer, không phải string
+                                $phong_tap_id = ($phongTapInfo && isset($phongTapInfo['phong_tap_id']) && $phongTapInfo['phong_tap_id'] !== null) ? (int)$phongTapInfo['phong_tap_id'] : null;
+                                error_log("Schedule - Loaded phong_tap_id from DB: " . ($phong_tap_id ?? 'NULL') . " (type: " . ($phong_tap_id ? gettype($phong_tap_id) : 'NULL') . ")");
+                            }
+                            
+                            // Debug: Log thông tin khách hàng
+                            error_log("Schedule check - Username: {$username}, khach_hang_id: {$khach_hang_id}, phong_tap_id: " . ($phong_tap_id ?? 'NULL'));
+                            
+                            // Kiểm tra xem có lịch tập nào của phòng tập này không
+                            if ($phong_tap_id) {
+                                $stmt_check_lt = $pdo->prepare("SELECT COUNT(*) as total FROM LichTap WHERE phong_tap_id = :phong_tap_id AND trang_thai != 'Hủy'");
+                                $stmt_check_lt->execute([':phong_tap_id' => $phong_tap_id]);
+                                $check_lt = $stmt_check_lt->fetch();
+                                error_log("Schedule check - Total classes for phong_tap_id {$phong_tap_id}: " . ($check_lt['total'] ?? 0));
+                            } else {
+                                error_log("Schedule check - WARNING: phong_tap_id is NULL for khach_hang_id: {$khach_hang_id}");
+                            }
+                            
+                            // Kiểm tra gói tập
+                            // Đầu tiên, kiểm tra tất cả gói tập của khách hàng (để debug)
+                            $stmt_debug = $pdo->prepare("SELECT dk.dang_ky_id, dk.goi_tap_id, dk.ngay_bat_dau, dk.ngay_ket_thuc, dk.trang_thai, gt.ten_goi,
+                                                           CURDATE() as ngay_hien_tai, DATE(dk.ngay_ket_thuc) as ngay_kt_formatted
+                                                           FROM DangKyGoiTap dk
+                                                           LEFT JOIN GoiTap gt ON dk.goi_tap_id = gt.goi_tap_id
+                                                           WHERE dk.khach_hang_id = :kh_id
+                                                           ORDER BY dk.dang_ky_id DESC 
+                                                           LIMIT 5");
+                            $stmt_debug->execute([':kh_id' => $khach_hang_id]);
+                            $allPackages = $stmt_debug->fetchAll();
+                            
+                            // Debug: Log số lượng gói tập tìm thấy
+                            error_log("Schedule check - Found " . count($allPackages) . " packages for khach_hang_id: {$khach_hang_id}");
+                            
+                            // Lấy TẤT CẢ các gói tập hợp lệ (Đang hoạt động, chưa hết hạn)
+                            $stmt = $pdo->prepare("SELECT dk.dang_ky_id, dk.goi_tap_id, dk.ngay_ket_thuc, dk.ngay_bat_dau, gt.ten_goi, dk.trang_thai
+                                                   FROM DangKyGoiTap dk
+                                                   LEFT JOIN GoiTap gt ON dk.goi_tap_id = gt.goi_tap_id
+                                                   WHERE dk.khach_hang_id = :kh_id 
+                                                   AND dk.trang_thai = 'Đang hoạt động'
+                                                   AND DATE(dk.ngay_ket_thuc) >= CURDATE()
+                                                   ORDER BY dk.dang_ky_id DESC");
+                            $stmt->execute([':kh_id' => $khach_hang_id]);
+                            $allValidPackages = $stmt->fetchAll();
+                            
+                            // Lấy gói được chọn từ URL parameter hoặc chọn gói đầu tiên
+                            $selectedPackageId = isset($_GET['package_id']) ? (int)$_GET['package_id'] : null;
+                            $selectedPackage = null;
+                            
+                            // Phân loại gói: đã đặt lịch và chưa đặt lịch
+                            $packagesWithClasses = [];
+                            $packagesWithoutClasses = [];
+                            
+                            foreach ($allValidPackages as $pkg) {
+                                $dang_ky_id = $pkg['dang_ky_id'];
+                                $ngay_bat_dau = $pkg['ngay_bat_dau'];
+                                $ngay_ket_thuc = $pkg['ngay_ket_thuc'];
+                                
+                                // Kiểm tra xem gói này có lớp đã đăng ký không - CHỈ LẤY LỊCH TẬP CỦA PHÒNG TẬP
+                                if ($phong_tap_id) {
+                                    $stmt_check = $pdo->prepare("SELECT COUNT(*) as so_lop
+                                                                 FROM DangKyLichTap dk
+                                                                 JOIN LichTap lt ON dk.lich_tap_id = lt.lich_tap_id
+                                                                 WHERE dk.khach_hang_id = :kh_id
+                                                                 AND dk.trang_thai = 'Đã đăng ký'
+                                                                 AND lt.ngay_tap >= :ngay_bat_dau
+                                                                 AND lt.ngay_tap <= :ngay_ket_thuc
+                                                                 AND lt.phong_tap_id = :phong_tap_id");
+                                    $stmt_check->execute([
+                                        ':kh_id' => $khach_hang_id,
+                                        ':ngay_bat_dau' => $ngay_bat_dau,
+                                        ':ngay_ket_thuc' => $ngay_ket_thuc,
+                                        ':phong_tap_id' => $phong_tap_id
+                                    ]);
+                                } else {
+                                    // Nếu không có phòng tập, không có lớp nào
+                                    $stmt_check = $pdo->prepare("SELECT 0 as so_lop");
+                                    $stmt_check->execute();
+                                }
+                                $checkResult = $stmt_check->fetch();
+                                $so_lop = (int)$checkResult['so_lop'];
+                                
+                                $pkg['so_lop_da_dang_ky'] = $so_lop;
+                                
+                                if ($so_lop > 0) {
+                                    $packagesWithClasses[] = $pkg;
+                                } else {
+                                    $packagesWithoutClasses[] = $pkg;
+                                }
+                                
+                                // Xác định gói được chọn
+                                if ($selectedPackageId && $dang_ky_id == $selectedPackageId) {
+                                    $selectedPackage = $pkg;
+                                }
+                            }
+                            
+                            // Nếu chưa chọn gói, ưu tiên gói có lớp đã đăng ký, nếu không thì chọn gói đầu tiên
+                            if (!$selectedPackage && !$selectedPackageId) {
+                                if (count($packagesWithClasses) > 0) {
+                                    $selectedPackage = $packagesWithClasses[0];
+                                } elseif (count($packagesWithoutClasses) > 0) {
+                                    $selectedPackage = $packagesWithoutClasses[0];
+                                } elseif (count($allValidPackages) > 0) {
+                                    $selectedPackage = $allValidPackages[0];
+                                }
+                            }
+                            
+                            // Nếu có selectedPackageId nhưng không tìm thấy, chọn gói đầu tiên
+                            if ($selectedPackageId && !$selectedPackage && count($allValidPackages) > 0) {
+                                if (count($packagesWithClasses) > 0) {
+                                    $selectedPackage = $packagesWithClasses[0];
+                                } else {
+                                    $selectedPackage = $allValidPackages[0];
+                                }
+                            }
+                            
+                            // Hiển thị danh sách gói tập
+                            if (count($allValidPackages) > 0) {
+                                echo '<div style="background: var(--bg-2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">';
+                                echo '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px;">';
+                                echo '<h3 style="margin: 0; color: var(--primary);"><i class="fas fa-box"></i> Gói tập của bạn (' . count($allValidPackages) . ')</h3>';
+                                echo '<a href="../goitap/packages.html" class="btn ghost">Mua thêm</a>';
+                                echo '</div>';
+                                
+                                // Hiển thị gói đã đặt lịch
+                                if (count($packagesWithClasses) > 0) {
+                                    echo '<div style="margin-bottom: 20px;">';
+                                    echo '<h4 style="margin: 0 0 10px 0; color: var(--text); font-size: 16px;"><i class="fas fa-calendar-check" style="color: var(--primary);"></i> Gói đã đặt lịch</h4>';
+                                    echo '<div style="display: grid; gap: 10px;">';
+                                    foreach ($packagesWithClasses as $pkg) {
+                                        $dang_ky_id = $pkg['dang_ky_id'];
+                                        $ten_goi = htmlspecialchars($pkg['ten_goi'] ?? 'Gói tập');
+                                        $ngay_bat_dau = date('d/m/Y', strtotime($pkg['ngay_bat_dau']));
+                                        $ngay_ket_thuc = date('d/m/Y', strtotime($pkg['ngay_ket_thuc']));
+                                        $so_lop = $pkg['so_lop_da_dang_ky'];
+                                        $isSelected = $selectedPackage && $selectedPackage['dang_ky_id'] == $dang_ky_id;
+                                        
+                                        echo '<div style="background: var(--bg-1); padding: 15px; border-radius: 8px; border-left: 4px solid ' . ($isSelected ? 'var(--primary)' : 'transparent') . '; cursor: pointer; transition: all 0.3s;"';
+                                        echo ' onclick="selectPackage(' . $dang_ky_id . ')"';
+                                        echo ' onmouseover="this.style.background=\'var(--bg-2)\'"';
+                                        echo ' onmouseout="this.style.background=\'var(--bg-1)\'">';
+                                        echo '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">';
+                                        echo '<div style="flex: 1;">';
+                                        echo '<strong style="color: var(--text);">' . $ten_goi . '</strong>';
+                                        if ($isSelected) {
+                                            echo ' <span class="status-active" style="padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px;">Đang chọn</span>';
+                                        }
+                                        echo '<br>';
+                                        echo '<span style="color: var(--muted); font-size: 14px;">';
+                                        echo $ngay_bat_dau . ' - ' . $ngay_ket_thuc . ' | ';
+                                        echo '<strong style="color: var(--primary);">' . $so_lop . ' lớp đã đăng ký</strong>';
+                                        echo '</span>';
+                                        echo '</div>';
+                                        echo '<button type="button" class="btn ghost" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); selectPackage(' . $dang_ky_id . ')">';
+                                        echo '<i class="fas fa-eye"></i> Xem lịch</button>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                    }
+                                    echo '</div>';
+                                    echo '</div>';
+                                }
+                                
+                                // Hiển thị gói chưa đặt lịch
+                                if (count($packagesWithoutClasses) > 0) {
+                                    echo '<div>';
+                                    echo '<h4 style="margin: 0 0 10px 0; color: var(--text); font-size: 16px;"><i class="fas fa-calendar-plus" style="color: var(--muted);"></i> Gói chưa đặt lịch</h4>';
+                                    echo '<div style="display: grid; gap: 10px;">';
+                                    foreach ($packagesWithoutClasses as $pkg) {
+                                        $dang_ky_id = $pkg['dang_ky_id'];
+                                        $ten_goi = htmlspecialchars($pkg['ten_goi'] ?? 'Gói tập');
+                                        $ngay_bat_dau = date('d/m/Y', strtotime($pkg['ngay_bat_dau']));
+                                        $ngay_ket_thuc = date('d/m/Y', strtotime($pkg['ngay_ket_thuc']));
+                                        $isSelected = $selectedPackage && $selectedPackage['dang_ky_id'] == $dang_ky_id;
+                                        
+                                        echo '<div style="background: var(--bg-1); padding: 15px; border-radius: 8px; border-left: 4px solid ' . ($isSelected ? 'var(--primary)' : 'transparent') . '; cursor: pointer; transition: all 0.3s;"';
+                                        echo ' onclick="selectPackage(' . $dang_ky_id . ')"';
+                                        echo ' onmouseover="this.style.background=\'var(--bg-2)\'"';
+                                        echo ' onmouseout="this.style.background=\'var(--bg-1)\'">';
+                                        echo '<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">';
+                                        echo '<div style="flex: 1;">';
+                                        echo '<strong style="color: var(--text);">' . $ten_goi . '</strong>';
+                                        if ($isSelected) {
+                                            echo ' <span class="status-active" style="padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px;">Đang chọn</span>';
+                                        }
+                                        echo '<br>';
+                                        echo '<span style="color: var(--muted); font-size: 14px;">';
+                                        echo $ngay_bat_dau . ' - ' . $ngay_ket_thuc . ' | ';
+                                        echo '<span style="color: var(--muted);">Chưa có lớp đăng ký</span>';
+                                        echo '</span>';
+                                        echo '</div>';
+                                        echo '<button type="button" class="btn" style="padding: 6px 12px; font-size: 13px;" onclick="event.stopPropagation(); selectPackage(' . $dang_ky_id . ')">';
+                                        echo '<i class="fas fa-calendar-plus"></i> Đặt lịch</button>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                    }
+                                    echo '</div>';
+                                    echo '</div>';
+                                }
+                                
+                                echo '</div>';
+                                
+                                // Hiển thị lớp đã đăng ký của gói được chọn
+                                if ($selectedPackage) {
+                                    $ngay_bat_dau_goi = $selectedPackage['ngay_bat_dau'];
+                                    $ngay_ket_thuc_goi = $selectedPackage['ngay_ket_thuc'];
+                                    
+                                    // Lấy danh sách lớp đã đăng ký trong khoảng thời gian gói tập được chọn
+                                    // Query này tự động cập nhật khi admin thay đổi lịch tập
+                                    // CHỈ LẤY LỊCH TẬP CỦA PHÒNG TẬP CỦA KHÁCH HÀNG
+                                    if ($phong_tap_id) {
+                                        $stmt = $pdo->prepare("SELECT dk.dang_ky_lich_id, lt.lich_tap_id, lt.ten_lop, lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc, dk.ngay_dang_ky, dk.trang_thai, nv.ho_ten as ten_huan_luyen_vien
+                                                              FROM DangKyLichTap dk
+                                                              JOIN LichTap lt ON dk.lich_tap_id = lt.lich_tap_id
+                                                              LEFT JOIN nhanvien nv ON lt.nhan_vien_pt_id = nv.nhan_vien_id
+                                                              WHERE dk.khach_hang_id = :kh_id
+                                                              AND dk.trang_thai = 'Đã đăng ký'
+                                                              AND lt.ngay_tap >= :ngay_bat_dau_goi
+                                                              AND lt.ngay_tap <= :ngay_ket_thuc_goi
+                                                              AND lt.trang_thai != 'Hủy'
+                                                              AND lt.phong_tap_id = :phong_tap_id
+                                                              ORDER BY lt.ngay_tap ASC, lt.gio_bat_dau ASC");
+                                        $stmt->execute([
+                                            ':kh_id' => $khach_hang_id,
+                                            ':ngay_bat_dau_goi' => $ngay_bat_dau_goi,
+                                            ':ngay_ket_thuc_goi' => $ngay_ket_thuc_goi,
+                                            ':phong_tap_id' => $phong_tap_id
+                                        ]);
+                                    } else {
+                                        // Nếu không có phòng tập, không lấy lớp nào
+                                        $stmt = $pdo->prepare("SELECT 1 WHERE 1 = 0"); // Query luôn trả về rỗng
+                                        $stmt->execute();
+                                    }
+                                    $classes = $stmt->fetchAll();
+                                    
+                                    if (count($classes) > 0) {
+                                        echo '<div style="background: var(--bg-2); padding: 20px; border-radius: 12px; margin-bottom: 30px;">';
+                                        echo '<h3 style="margin: 0 0 15px 0;"><i class="fas fa-calendar-check"></i> Lớp đã đăng ký của gói "' . htmlspecialchars($selectedPackage['ten_goi'] ?? 'Gói tập') . '" (' . count($classes) . ')</h3>';
+                                        echo '<div style="display: grid; gap: 10px;">';
+                                        foreach ($classes as $class) {
+                                            $dang_ky_lich_id = $class['dang_ky_lich_id'];
+                                            $lich_tap_id_registered = $class['lich_tap_id'];
+                                            $ngay_tap = date('d/m/Y', strtotime($class['ngay_tap']));
+                                            $gio_bd = date('H:i', strtotime($class['gio_bat_dau']));
+                                            $gio_kt = date('H:i', strtotime($class['gio_ket_thuc']));
+                                            $ten_lop = htmlspecialchars($class['ten_lop']);
+                                            $ten_hv = htmlspecialchars($class['ten_huan_luyen_vien'] ?? 'Chưa có');
+                                            $ngay_tap_raw = $class['ngay_tap'];
+                                            $can_cancel = ($ngay_tap_raw >= date('Y-m-d')); // Chỉ cho phép hủy lớp chưa diễn ra
+                                            
+                                            echo '<div style="background: var(--bg-1); padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">';
+                                            echo '<div style="flex: 1;">';
+                                            echo '<strong style="color: var(--text);">' . $ten_lop . '</strong><br>';
+                                            echo '<span style="color: var(--muted); font-size: 14px;">';
+                                            echo date('l', strtotime($class['ngay_tap'])) . ' ' . $ngay_tap . ' | ';
+                                            echo $gio_bd . ' - ' . $gio_kt;
+                                            echo ' | ' . $ten_hv;
+                                            echo '</span>';
+                                            echo '</div>';
+                                            echo '<div style="display: flex; gap: 8px; align-items: center;">';
+                                            echo '<span class="status-active" style="padding: 5px 15px; border-radius: 20px;">Đã đăng ký</span>';
+                                            
+                                            if ($can_cancel) {
+                                                // Nút Sửa (mở modal để chọn lớp mới)
+                                                echo '<button type="button" class="btn ghost" style="padding: 6px 12px; font-size: 13px;" onclick="openEditClassModal(' . $dang_ky_lich_id . ', ' . $lich_tap_id_registered . ', ' . json_encode($ten_lop) . ')">';
+                                                echo '<i class="fas fa-edit"></i> Sửa</button>';
+                                                
+                                                // Nút Hủy
+                                                $confirmMsg = json_encode('Bạn có chắc chắn muốn hủy lớp này?');
+                                                echo '<form method="POST" action="cancel_class.php" style="display: inline;" onsubmit="return confirm(' . $confirmMsg . ');">';
+                                                echo '<input type="hidden" name="dang_ky_lich_id" value="' . (int)$dang_ky_lich_id . '">';
+                                                echo '<input type="hidden" name="lich_tap_id" value="' . (int)$lich_tap_id_registered . '">';
+                                                echo '<button type="submit" class="btn" style="padding: 6px 12px; font-size: 13px; background: rgba(255, 48, 64, 0.1); color: #ff3040; border-color: #ff3040;">';
+                                                echo '<i class="fas fa-times"></i> Hủy</button>';
+                                                echo '</form>';
+                                            } else {
+                                                echo '<span style="padding: 6px 12px; font-size: 13px; color: var(--muted); opacity: 0.7;">Lớp đã diễn ra</span>';
+                                            }
+                                            echo '</div>';
+                                            echo '</div>';
+                                        }
+                                        echo '</div>';
+                                        echo '</div>';
+                                    }
+                                }
+                            } else {
+                                // Không có gói tập hợp lệ
+                                echo '<div class="mt-12 text-center p-4 rounded-lg bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800">';
+                                echo '<p class="text-gray-600 dark:text-gray-400">Bạn chưa có gói tập hợp lệ. <a class="font-semibold text-primary hover:underline" href="../goitap/packages.html">Mua gói tập ngay</a></p>';
+                                echo '</div>';
+                            }
+                        }
+                    } else {
+                        // Database không khả dụng, hiển thị thông báo
+                        echo '<div class="mt-12 text-center p-4 rounded-lg bg-gray-100 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800">';
+                        echo '<p class="text-gray-600 dark:text-gray-400">Không thể kết nối cơ sở dữ liệu. Vui lòng thử lại sau.</p>';
+                        echo '</div>';
+                    }
+                } catch (Exception $e) {
+                    error_log("Schedule display error: " . $e->getMessage());
+                    // Hiển thị thông báo lỗi nhưng không chặn trang
+                    echo '<!-- Error loading schedule data: ' . htmlspecialchars($e->getMessage()) . ' -->';
+                }
+            }
+            ?>
+            
+            <?php
+            // Hiển thị thông báo đồng bộ với gói tập được chọn
+            if (isset($_SESSION['user'])) {
+                try {
+                    @require_once __DIR__ . '/../../database/config.php';
+                    @require_once __DIR__ . '/../../database/db_connect.php';
+                    
+                    if (isset($pdo)) {
+                        $username = $_SESSION['user']['username'];
+                        $stmt = $pdo->prepare("SELECT khach_hang_id FROM KhachHang WHERE ten_dang_nhap = :username LIMIT 1");
+                        $stmt->execute([':username' => $username]);
+                        $khachHang = $stmt->fetch();
+                        
+                        if ($khachHang) {
+                            $khach_hang_id = $khachHang['khach_hang_id'];
+                            
+                            // Lấy gói được chọn (tương tự như phần trên)
+                            $selectedPackageId = isset($_GET['package_id']) ? (int)$_GET['package_id'] : null;
+                            
+                            $stmt = $pdo->prepare("SELECT dk.dang_ky_id, dk.ngay_bat_dau, dk.ngay_ket_thuc, gt.ten_goi
+                                                   FROM DangKyGoiTap dk
+                                                   LEFT JOIN GoiTap gt ON dk.goi_tap_id = gt.goi_tap_id
+                                                   WHERE dk.khach_hang_id = :kh_id 
+                                                   AND dk.trang_thai = 'Đang hoạt động'
+                                                   AND DATE(dk.ngay_ket_thuc) >= CURDATE()
+                                                   " . ($selectedPackageId ? "AND dk.dang_ky_id = :package_id" : "") . "
+                                                   ORDER BY dk.dang_ky_id DESC
+                                                   LIMIT 1");
+                            $params = [':kh_id' => $khach_hang_id];
+                            if ($selectedPackageId) {
+                                $params[':package_id'] = $selectedPackageId;
+                            }
+                            $stmt->execute($params);
+                            $goiTap = $stmt->fetch();
+                            
+                            // Nếu không tìm thấy gói được chọn, lấy gói đầu tiên
+                            if (!$goiTap) {
+                                $stmt = $pdo->prepare("SELECT dk.dang_ky_id, dk.ngay_bat_dau, dk.ngay_ket_thuc, gt.ten_goi
+                                                       FROM DangKyGoiTap dk
+                                                       LEFT JOIN GoiTap gt ON dk.goi_tap_id = gt.goi_tap_id
+                                                       WHERE dk.khach_hang_id = :kh_id 
+                                                       AND dk.trang_thai = 'Đang hoạt động'
+                                                       AND DATE(dk.ngay_ket_thuc) >= CURDATE()
+                                                       ORDER BY dk.dang_ky_id DESC
+                                                       LIMIT 1");
+                                $stmt->execute([':kh_id' => $khach_hang_id]);
+                                $goiTap = $stmt->fetch();
+                            }
+                            
+                            if ($goiTap) {
+                                $ngay_bat_dau = date('d/m/Y', strtotime($goiTap['ngay_bat_dau']));
+                                $ngay_ket_thuc = date('d/m/Y', strtotime($goiTap['ngay_ket_thuc']));
+                                $ten_goi = htmlspecialchars($goiTap['ten_goi'] ?? 'Gói tập');
+                                echo '<div style="background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(155, 89, 182, 0.1) 100%); padding: 15px 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid var(--primary);">';
+                                echo '<p style="margin: 0; color: var(--text); font-size: 14px;">';
+                                echo '<i class="fas fa-sync-alt" style="color: var(--primary); margin-right: 8px;"></i>';
+                                echo '<strong>Lịch tập đã được đồng bộ với gói tập "' . $ten_goi . '".</strong> ';
+                                echo 'Chỉ hiển thị các lớp từ <strong>' . $ngay_bat_dau . '</strong> đến <strong>' . $ngay_ket_thuc . '</strong>.';
+                                echo '</p>';
+                                echo '</div>';
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log("Sync message error: " . $e->getMessage());
+                    // Không hiển thị lỗi, chỉ log
+                }
+            }
+            ?>
+
+            <div class="mt-12 overflow-x-auto">
+              <div class="w-full min-w-[1000px] border border-gray-200 dark:border-gray-800 rounded-lg bg-white dark:bg-gray-900/50 shadow-lg">
+                <table class="w-full border-collapse text-center" id="schedule-table">
+                  <thead>
+                    <tr class="bg-gray-50 dark:bg-gray-800/50">
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thời gian</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Hai</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Ba</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Tư</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Năm</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Sáu</th>
+                      <th class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Thứ Bảy</th>
+                      <th class="p-4 border-b border-gray-200 dark:border-gray-800 font-bold text-gray-700 dark:text-gray-300">Chủ Nhật</th>
+                    </tr>
+                  </thead>
+                  <tbody id="schedule-table-content">
+                      <?php
+                      // Lấy lịch tập theo tuần từ database
+                      try {
+                          @require_once __DIR__ . '/../../database/config.php';
+                          @require_once __DIR__ . '/../../database/db_connect.php';
+                          
+                          if (!isset($pdo)) {
+                              throw new Exception("Database connection not available");
+                          }
+                          
+                          // Tính toán tuần hiện tại (khớp với MySQL)
+                          // MySQL: DAYOFWEEK() - Chủ Nhật = 1, Thứ 2 = 2, ..., Thứ 7 = 7
+                          // Sử dụng cùng logic như trong SQL insert để đảm bảo khớp nhau
+                          $stmt_date = $pdo->query("SELECT 
+                              CASE 
+                                  WHEN DAYOFWEEK(CURDATE()) = 1 THEN DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+                                  ELSE DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 2) DAY)
+                              END as monday,
+                              CASE 
+                                  WHEN DAYOFWEEK(CURDATE()) = 1 THEN DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                                  ELSE DATE_ADD(DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 2) DAY), INTERVAL 6 DAY)
+                              END as sunday");
+                          $weekDates = $stmt_date->fetch();
+                          
+                          if (!$weekDates) {
+                              throw new Exception("Could not calculate week dates");
+                          }
+                          
+                          $startDate = $weekDates['monday'];
+                          $endDate = $weekDates['sunday'];
+                          
+                          // Lấy khách_hang_id và thông tin gói tập nếu user đã đăng nhập
+                          $userClassIds = [];
+                          $userRegistrationsMap = []; // Map lich_tap_id => dang_ky_lich_id
+                          $hasValidPackage = false; // Biến để kiểm tra có gói tập hợp lệ không
+                          $packageStartDate = null; // Ngày bắt đầu gói tập
+                          $packageEndDate = null; // Ngày kết thúc gói tập
+                          
+                          if (isset($_SESSION['user'])) {
+                              $username = $_SESSION['user']['username'];
+                              $stmt = $pdo->prepare("SELECT khach_hang_id, phong_tap_id FROM KhachHang WHERE ten_dang_nhap = :username LIMIT 1");
+                              $stmt->execute([':username' => $username]);
+                              $khachHang = $stmt->fetch();
+                              if ($khachHang) {
+                                  $khach_hang_id = $khachHang['khach_hang_id'];
+                                  // Đảm bảo phong_tap_id là integer, không phải string
+                                  $phong_tap_id = isset($khachHang['phong_tap_id']) && $khachHang['phong_tap_id'] !== null ? (int)$khachHang['phong_tap_id'] : null;
+                                  error_log("Schedule - khach_hang_id: {$khach_hang_id}, phong_tap_id: " . ($phong_tap_id ?? 'NULL') . " (type: " . ($phong_tap_id ? gettype($phong_tap_id) : 'NULL') . ")");
+                                  
+                                  // Lấy thông tin gói tập được chọn (từ URL parameter hoặc gói đầu tiên)
+                                  $selectedPackageId = isset($_GET['package_id']) ? (int)$_GET['package_id'] : null;
+                                  
+                                  // Nếu có package_id trong URL, ưu tiên lấy gói đó
+                                  if ($selectedPackageId) {
+                                      $sql_pkg = "SELECT dang_ky_id, ngay_bat_dau, ngay_ket_thuc
+                                                  FROM DangKyGoiTap 
+                                                  WHERE khach_hang_id = :kh_id 
+                                                  AND dang_ky_id = :package_id
+                                                  AND trang_thai = 'Đang hoạt động'
+                                                  AND DATE(ngay_ket_thuc) >= CURDATE()
+                                                  LIMIT 1";
+                                      $params_pkg = [':kh_id' => $khach_hang_id, ':package_id' => $selectedPackageId];
+                                  } else {
+                                      // Nếu không có package_id, lấy gói đầu tiên hợp lệ
+                                      $sql_pkg = "SELECT dang_ky_id, ngay_bat_dau, ngay_ket_thuc
+                                                  FROM DangKyGoiTap 
+                                                  WHERE khach_hang_id = :kh_id 
+                                                  AND trang_thai = 'Đang hoạt động'
+                                                  AND DATE(ngay_ket_thuc) >= CURDATE()
+                                                  ORDER BY dang_ky_id DESC LIMIT 1";
+                                      $params_pkg = [':kh_id' => $khach_hang_id];
+                                  }
+                                  
+                                  $stmt_pkg = $pdo->prepare($sql_pkg);
+                                  $stmt_pkg->execute($params_pkg);
+                                  $validPackage = $stmt_pkg->fetch();
+                                  $hasValidPackage = ($validPackage !== false);
+                                  
+                                  // Debug log
+                                  if ($hasValidPackage) {
+                                      error_log("Schedule: Found valid package - dang_ky_id: {$validPackage['dang_ky_id']}, start: {$validPackage['ngay_bat_dau']}, end: {$validPackage['ngay_ket_thuc']}");
+                                  } else {
+                                      error_log("Schedule: No valid package found for khach_hang_id: {$khach_hang_id}, selectedPackageId: " . ($selectedPackageId ?? 'null'));
+                                  }
+                                  
+                                  if ($hasValidPackage) {
+                                      $packageStartDate = $validPackage['ngay_bat_dau'];
+                                      $packageEndDate = $validPackage['ngay_ket_thuc'];
+                                      
+                                      // Điều chỉnh startDate và endDate để không vượt quá phạm vi gói tập
+                                      if ($packageStartDate > $startDate) {
+                                          $startDate = $packageStartDate;
+                                      }
+                                      if ($packageEndDate < $endDate) {
+                                          $endDate = $packageEndDate;
+                                      }
+                                  }
+                                  
+                                  // Lấy danh sách lớp đã đăng ký
+                                  $stmt = $pdo->prepare("SELECT dang_ky_lich_id, lich_tap_id FROM DangKyLichTap 
+                                                       WHERE khach_hang_id = :kh_id 
+                                                       AND trang_thai = 'Đã đăng ký'");
+                                  $stmt->execute([':kh_id' => $khach_hang_id]);
+                                  $userRegistrations = $stmt->fetchAll();
+                                  foreach ($userRegistrations as $reg) {
+                                      $userClassIds[] = $reg['lich_tap_id'];
+                                      $userRegistrationsMap[$reg['lich_tap_id']] = $reg['dang_ky_lich_id'];
+                                  }
+                              }
+                          }
+                          
+                          // Lấy tất cả lớp trong tuần, đồng bộ với gói tập nếu có
+                          // Query này lấy dữ liệu trực tiếp từ database, tự động cập nhật khi admin thêm/sửa/xóa
+                          // CHỈ HIỂN THỊ LỊCH TẬP CỦA PHÒNG TẬP MÀ KHÁCH HÀNG ĐÃ ĐĂNG KÝ
+                          // QUAN TRỌNG: Phải lấy phong_tap_id từ LichTap để đảm bảo filter đúng
+                          $sql = "SELECT lt.lich_tap_id, lt.ten_lop, lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc, 
+                                         lt.so_luong_toi_da, lt.phong, lt.trang_thai, lt.phong_tap_id,
+                                         nv.ho_ten as ten_huan_luyen_vien,
+                                         COUNT(dk.dang_ky_lich_id) as so_luong_da_dang_ky
+                                  FROM LichTap lt
+                                  LEFT JOIN nhanvien nv ON lt.nhan_vien_pt_id = nv.nhan_vien_id
+                                  LEFT JOIN DangKyLichTap dk ON lt.lich_tap_id = dk.lich_tap_id 
+                                      AND dk.trang_thai = 'Đã đăng ký'
+                                  WHERE lt.ngay_tap >= :start_date AND lt.ngay_tap <= :end_date
+                                  AND lt.trang_thai != 'Hủy'";
+                          
+                          // CHỈ HIỂN THỊ LỊCH TẬP CỦA PHÒNG TẬP CỦA KHÁCH HÀNG
+                          // BẮT BUỘC: User chỉ xem được lịch tập của phòng tập mà họ đã đăng ký
+                          if ($phong_tap_id && $phong_tap_id > 0) {
+                              // Sử dụng so sánh trực tiếp với integer (không cần CAST vì đã ép kiểu ở trên)
+                              $sql .= " AND lt.phong_tap_id = :phong_tap_id";
+                              error_log("Schedule filter - Only showing classes for phong_tap_id: {$phong_tap_id} (type: " . gettype($phong_tap_id) . ")");
+                          } else {
+                              // Nếu khách hàng chưa có phòng tập, không hiển thị lịch nào
+                              $sql .= " AND 1 = 0";
+                              error_log("Schedule filter - No phong_tap_id or invalid, showing no classes. phong_tap_id value: " . var_export($phong_tap_id, true));
+                          }
+                          
+                          // Nếu có gói tập hợp lệ, chỉ hiển thị các lớp trong khoảng thời gian gói tập
+                          // Nếu không có gói tập hợp lệ (đã hủy), vẫn hiển thị lịch tập nhưng không cho đăng ký
+                          if ($hasValidPackage && $packageStartDate && $packageEndDate) {
+                              $sql .= " AND lt.ngay_tap >= :package_start AND lt.ngay_tap <= :package_end";
+                          }
+                          // Nếu không có gói tập hợp lệ, vẫn hiển thị lịch tập (không filter theo ngày gói tập)
+                          
+                          $sql .= " GROUP BY lt.lich_tap_id
+                                    ORDER BY lt.ngay_tap ASC, lt.gio_bat_dau ASC";
+                          
+                          $stmt = $pdo->prepare($sql);
+                          $params = [
+                              ':start_date' => $startDate,
+                              ':end_date' => $endDate
+                          ];
+                          
+                          // Thêm điều kiện lọc theo phòng tập - ĐẢM BẢO LÀ INTEGER
+                          if ($phong_tap_id && $phong_tap_id > 0) {
+                              $params[':phong_tap_id'] = (int)$phong_tap_id; // Ép kiểu về integer
+                              error_log("Binding phong_tap_id: " . (int)$phong_tap_id . " (type: " . gettype((int)$phong_tap_id) . ")");
+                          } else {
+                              error_log("ERROR: phong_tap_id is missing or invalid. Value: " . var_export($phong_tap_id, true));
+                          }
+                          
+                          // Thêm điều kiện lọc theo gói tập nếu có
+                          if ($hasValidPackage && $packageStartDate && $packageEndDate) {
+                              $params[':package_start'] = $packageStartDate;
+                              $params[':package_end'] = $packageEndDate;
+                          }
+                          
+                          $stmt->execute($params);
+                          $classes = $stmt->fetchAll();
+                          
+                          // Debug: Log số lượng kết quả và chi tiết
+                          error_log("=== SCHEDULE QUERY DEBUG ===");
+                          error_log("User phong_tap_id: " . var_export($phong_tap_id, true) . " (type: " . ($phong_tap_id ? gettype($phong_tap_id) : 'NULL') . ")");
+                          error_log("Query params: " . print_r($params, true));
+                          error_log("Query SQL: " . $sql);
+                          error_log("Query result: " . count($classes) . " classes found");
+                          if (count($classes) > 0) {
+                              error_log("First class phong_tap_id: " . var_export($classes[0]['phong_tap_id'] ?? 'N/A', true));
+                              // Kiểm tra tất cả lịch tập có đúng phong_tap_id không
+                              $wrong_phong_tap = [];
+                              foreach ($classes as $class) {
+                                  $class_pt_id = isset($class['phong_tap_id']) ? (int)$class['phong_tap_id'] : null;
+                                  if ($class_pt_id != $phong_tap_id) {
+                                      $wrong_phong_tap[] = "lich_tap_id: {$class['lich_tap_id']}, phong_tap_id: {$class_pt_id}";
+                                  }
+                              }
+                              if (!empty($wrong_phong_tap)) {
+                                  error_log("WARNING: Found classes with wrong phong_tap_id: " . implode(", ", $wrong_phong_tap));
+                              } else {
+                                  error_log("✓ All classes have correct phong_tap_id: {$phong_tap_id}");
+                              }
+                          } else {
+                              // Kiểm tra xem có lịch tập nào trong database không
+                              $stmt_check = $pdo->prepare("SELECT COUNT(*) as total, GROUP_CONCAT(DISTINCT phong_tap_id) as phong_tap_ids FROM LichTap WHERE ngay_tap >= :start_date AND ngay_tap <= :end_date AND trang_thai != 'Hủy'");
+                              $stmt_check->execute([':start_date' => $startDate, ':end_date' => $endDate]);
+                              $check_result = $stmt_check->fetch();
+                              error_log("Total classes in DB for date range: " . ($check_result['total'] ?? 0) . ", phong_tap_ids: " . ($check_result['phong_tap_ids'] ?? 'N/A'));
+                              
+                              // Kiểm tra lịch tập của phòng tập này
+                              if ($phong_tap_id && $phong_tap_id > 0) {
+                                  $stmt_check_pt = $pdo->prepare("SELECT COUNT(*) as total FROM LichTap WHERE phong_tap_id = :phong_tap_id AND ngay_tap >= :start_date AND ngay_tap <= :end_date AND trang_thai != 'Hủy'");
+                                  $stmt_check_pt->execute([':phong_tap_id' => $phong_tap_id, ':start_date' => $startDate, ':end_date' => $endDate]);
+                                  $check_pt_result = $stmt_check_pt->fetch();
+                                  error_log("Classes for phong_tap_id {$phong_tap_id}: " . ($check_pt_result['total'] ?? 0));
+                              }
+                          }
+                          error_log("=== END SCHEDULE QUERY DEBUG ===");
+                          
+                          // Tổ chức dữ liệu theo ngày và giờ
+                          // Lọc thêm một lần nữa để đảm bảo chỉ hiển thị các lớp trong khoảng thời gian gói tập
+                          $scheduleData = [];
+                          foreach ($classes as $class) {
+                              $ngay = $class['ngay_tap'];
+                              
+                              // Nếu có gói tập hợp lệ, chỉ hiển thị các lớp trong khoảng thời gian gói tập
+                              // Nếu không có gói tập hợp lệ (đã hủy), vẫn hiển thị tất cả lịch tập
+                              if ($hasValidPackage && $packageStartDate && $packageEndDate) {
+                                  if ($ngay < $packageStartDate || $ngay > $packageEndDate) {
+                                      continue; // Bỏ qua lớp ngoài khoảng thời gian gói tập
+                                  }
+                              }
+                              // Nếu không có gói tập hợp lệ, vẫn hiển thị lịch tập (không filter theo ngày)
+                              
+                              $dayOfWeekNum = date('N', strtotime($ngay)); // 1=Monday, 7=Sunday
+                              $gio_bd = substr($class['gio_bat_dau'], 0, 5); // HH:MM
+                              $gio_kt = substr($class['gio_ket_thuc'], 0, 5);
+                              
+                              // Tính toán các timeSlot mà lịch tập này span qua
+                              list($bd_h, $bd_m) = explode(':', $gio_bd);
+                              list($kt_h, $kt_m) = explode(':', $gio_kt);
+                              $startMinutes = (int)$bd_h * 60 + (int)$bd_m;
+                              $endMinutes = (int)$kt_h * 60 + (int)$kt_m;
+                              
+                              // Tính số giờ (làm tròn lên)
+                              $durationHours = ceil(($endMinutes - $startMinutes) / 60);
+                              
+                              // Định nghĩa các timeSlot có sẵn trong hệ thống (mở rộng để hỗ trợ lịch tập dài hơn)
+                              $availableTimeSlots = [
+                                  '06:00 - 07:00',
+                                  '07:00 - 08:00',
+                                  '08:00 - 09:00',
+                                  '09:00 - 10:00',
+                                  '10:00 - 11:00',
+                                  '11:00 - 12:00',
+                                  '12:00 - 13:00',
+                                  '13:00 - 14:00',
+                                  '14:00 - 15:00',
+                                  '15:00 - 16:00',
+                                  '16:00 - 17:00',
+                                  '17:00 - 18:00',
+                                  '18:00 - 19:00',
+                                  '19:00 - 20:00',
+                                  '19:30 - 20:30',
+                                  '20:00 - 21:00',
+                                  '21:00 - 22:00',
+                                  '22:00 - 23:00'
+                              ];
+                              
+                              // Tìm các timeSlot mà lịch tập này span qua (bao gồm cả các timeSlot không có trong danh sách)
+                              $affectedTimeSlots = [];
+                              $currentMinutes = $startMinutes;
+                              
+                              // Tính số giờ cần span (làm tròn lên để đảm bảo bao gồm timeSlot cuối cùng)
+                              $hoursToSpan = ceil(($endMinutes - $startMinutes) / 60);
+                              
+                              for ($i = 0; $i < $hoursToSpan; $i++) {
+                                  $currentHour = floor($currentMinutes / 60);
+                                  $currentMin = $currentMinutes % 60;
+                                  $nextHour = floor(($currentMinutes + 60) / 60);
+                                  $nextMin = ($currentMinutes + 60) % 60;
+                                  
+                                  $slotStart = sprintf('%02d:%02d', $currentHour, $currentMin);
+                                  $slotEnd = sprintf('%02d:%02d', $nextHour, $nextMin);
+                                  $timeSlot = $slotStart . ' - ' . $slotEnd;
+                                  
+                                  // Thêm tất cả các timeSlot mà lịch tập span qua (không chỉ những cái có trong danh sách)
+                                  $affectedTimeSlots[] = $timeSlot;
+                                  $currentMinutes += 60;
+                              }
+                              
+                              // Tìm timeSlot đầu tiên mà lịch tập bắt đầu (ưu tiên timeSlot có trong danh sách)
+                              $firstTimeSlot = null;
+                              
+                              // Tìm trong danh sách timeSlot có sẵn trước
+                              foreach ($availableTimeSlots as $slot) {
+                                  list($slotStart, $slotEnd) = explode(' - ', $slot);
+                                  list($slot_h, $slot_m) = explode(':', $slotStart);
+                                  $slotStartMinutes = (int)$slot_h * 60 + (int)$slot_m;
+                                  list($slotEnd_h, $slotEnd_m) = explode(':', $slotEnd);
+                                  $slotEndMinutes = (int)$slotEnd_h * 60 + (int)$slotEnd_m;
+                                  
+                                  // Kiểm tra xem lịch tập có bắt đầu trong khoảng timeSlot này không
+                                  if ($startMinutes >= $slotStartMinutes && $startMinutes < $slotEndMinutes) {
+                                      $firstTimeSlot = $slot;
+                                      break;
+                                  }
+                              }
+                              
+                              // Nếu không tìm thấy trong danh sách, dùng timeSlot đầu tiên từ affectedTimeSlots
+                              if (!$firstTimeSlot && !empty($affectedTimeSlots)) {
+                                  $firstTimeSlot = $affectedTimeSlots[0];
+                              }
+                              
+                              // Nếu vẫn không có, tạo timeSlot từ giờ bắt đầu và kết thúc
+                              if (!$firstTimeSlot) {
+                                  $firstTimeSlot = $gio_bd . ' - ' . $gio_kt;
+                              }
+                              
+                              // Lưu thông tin duration và affected timeSlots vào class
+                              $class['duration_hours'] = $durationHours;
+                              $class['original_timeSlot'] = $gio_bd . ' - ' . $gio_kt;
+                              $class['affected_timeSlots'] = $affectedTimeSlots;
+                              
+                              if (!isset($scheduleData[$firstTimeSlot])) {
+                                  $scheduleData[$firstTimeSlot] = [];
+                              }
+                              
+                              // Cho phép nhiều lịch tập trong cùng timeSlot và dayOfWeekNum
+                              if (!isset($scheduleData[$firstTimeSlot][$dayOfWeekNum])) {
+                                  $scheduleData[$firstTimeSlot][$dayOfWeekNum] = [];
+                              }
+                              
+                              // Đảm bảo luôn là mảng các lịch tập
+                              if (!is_array($scheduleData[$firstTimeSlot][$dayOfWeekNum])) {
+                                  // Nếu đã có dữ liệu cũ (không phải mảng), chuyển thành mảng
+                                  $scheduleData[$firstTimeSlot][$dayOfWeekNum] = [$scheduleData[$firstTimeSlot][$dayOfWeekNum]];
+                              }
+                              
+                              // Thêm lịch tập vào mảng (không ghi đè)
+                              $scheduleData[$firstTimeSlot][$dayOfWeekNum][] = $class;
+                          }
+                          
+                          // Định nghĩa các khung giờ để hiển thị (mở rộng để hỗ trợ lịch tập dài hơn)
+                          $timeSlots = [
+                              '06:00 - 07:00',
+                              '07:00 - 08:00',
+                              '08:00 - 09:00',
+                              '09:00 - 10:00',
+                              '10:00 - 11:00',
+                              '11:00 - 12:00',
+                              '12:00 - 13:00',
+                              '13:00 - 14:00',
+                              '14:00 - 15:00',
+                              '15:00 - 16:00',
+                              '16:00 - 17:00',
+                              '17:00 - 18:00',
+                              '18:00 - 19:00',
+                              '19:00 - 20:00',
+                              '19:30 - 20:30',
+                              '20:00 - 21:00',
+                              '21:00 - 22:00',
+                              '22:00 - 23:00'
+                          ];
+                          
+                          // Tạo mảng để track các ô đã bị span
+                          $spannedCells = [];
+                          
+                          // Hiển thị lịch tập
+                          foreach ($timeSlots as $slotIndex => $timeSlot) {
+                              echo '<tr>';
+                              // Hiển thị ô thời gian
+                              echo '<td class="p-4 border-r border-b border-gray-200 dark:border-gray-800 font-medium text-gray-800 dark:text-gray-200 text-center align-middle">' . htmlspecialchars($timeSlot) . '</td>';
+                              
+                              // Hiển thị cho mỗi ngày trong tuần (Thứ 2 -> Chủ Nhật)
+                              for ($day = 1; $day <= 7; $day++) {
+                                  // Kiểm tra xem ô này có bị span không
+                                  $cellKey = "{$slotIndex}_{$day}";
+                                  if (isset($spannedCells[$cellKey])) {
+                                      // Ô này đã bị span, bỏ qua
+                                      continue;
+                                  }
+                                  
+                                  // Kiểm tra và chuẩn hóa dữ liệu để hỗ trợ nhiều lịch tập
+                                  $classes = [];
+                                  if (isset($scheduleData[$timeSlot][$day]) && !empty($scheduleData[$timeSlot][$day])) {
+                                      $data = $scheduleData[$timeSlot][$day];
+                                      
+                                      // Kiểm tra xem có phải là mảng các lịch tập không
+                                      if (is_array($data)) {
+                                          // Kiểm tra phần tử đầu tiên có phải là mảng không (nhiều lịch tập)
+                                          if (isset($data[0]) && is_array($data[0]) && isset($data[0]['lich_tap_id'])) {
+                                              // Đây là mảng các lịch tập
+                                              $classes = $data;
+                                          } elseif (isset($data['lich_tap_id'])) {
+                                              // Đây là một lịch tập đơn (dữ liệu cũ - tương thích)
+                                              $classes = [$data];
+                                          }
+                                      }
+                                  }
+                                  
+                                  // Tính rowspan cho lịch tập nhiều giờ
+                                  $rowspan = 1;
+                                  $hasMultiHourClass = false;
+                                  
+                                  if (!empty($classes)) {
+                                      foreach ($classes as $class) {
+                                          if (isset($class['duration_hours']) && $class['duration_hours'] > 1) {
+                                              // Tìm index của timeSlot hiện tại trong danh sách hiển thị (đây là ô đầu tiên)
+                                              $firstTimeSlotIndex = array_search($timeSlot, $timeSlots);
+                                              
+                                              // Tính số timeSlot trong danh sách hiển thị mà lịch tập span qua
+                                              $matchingTimeSlots = 0;
+                                              if (isset($class['affected_timeSlots']) && is_array($class['affected_timeSlots'])) {
+                                                  foreach ($class['affected_timeSlots'] as $affectedSlot) {
+                                                      // Kiểm tra xem timeSlot này có trong danh sách hiển thị không
+                                                      if (in_array($affectedSlot, $timeSlots)) {
+                                                          $matchingTimeSlots++;
+                                                      }
+                                                  }
+                                              }
+                                              
+                                              // Nếu không tìm thấy timeSlot nào match, dùng duration_hours
+                                              if ($matchingTimeSlots > 0) {
+                                                  $rowspan = max($rowspan, $matchingTimeSlots);
+                                              } else {
+                                                  $rowspan = max($rowspan, $class['duration_hours']);
+                                              }
+                                              
+                                              $hasMultiHourClass = true;
+                                              
+                                              // Đánh dấu các ô bị span (chỉ các timeSlot có trong danh sách hiển thị, trừ ô đầu tiên)
+                                              if (isset($class['affected_timeSlots']) && is_array($class['affected_timeSlots'])) {
+                                                  foreach ($class['affected_timeSlots'] as $affectedSlot) {
+                                                      // Kiểm tra xem timeSlot này có trong danh sách hiển thị không
+                                                      $affectedSlotIndex = array_search($affectedSlot, $timeSlots);
+                                                      if ($affectedSlotIndex !== false && $affectedSlotIndex !== $firstTimeSlotIndex) {
+                                                          // Đánh dấu ô này bị span (trừ ô đầu tiên)
+                                                          $spannedCells["{$affectedSlotIndex}_{$day}"] = true;
+                                                      }
+                                                  }
+                                              }
+                                          }
+                                      }
+                                  }
+                                  
+                                  $borderClass = ($day < 7) ? 'border-r border-b' : 'border-b';
+                                  if ($timeSlot === '19:30 - 20:30') {
+                                      $borderClass = ($day < 7) ? 'border-r' : '';
+                                  }
+                                  
+                                  if (!empty($classes)) {
+                                      echo '<td class="p-4 ' . $borderClass . ' border-gray-200 dark:border-gray-800 align-top"' . ($rowspan > 1 ? ' rowspan="' . $rowspan . '"' : '') . '>';
+                                      
+                                      // Hiển thị tất cả lịch tập trong cùng một cell
+                                      foreach ($classes as $classIndex => $class) {
+                                          $lich_tap_id = $class['lich_tap_id'];
+                                          $ten_lop = htmlspecialchars($class['ten_lop']);
+                                          $ten_hv = htmlspecialchars($class['ten_huan_luyen_vien'] ?? 'Chưa có');
+                                          $so_luong_da_dk = (int)$class['so_luong_da_dang_ky'];
+                                          $so_luong_toi_da = (int)$class['so_luong_toi_da'];
+                                          $trang_thai = $class['trang_thai'];
+                                          $gio_bd = substr($class['gio_bat_dau'], 0, 5);
+                                          $duration = isset($class['duration_hours']) ? $class['duration_hours'] : 1;
+                                          $timeDisplay = isset($class['original_timeSlot']) ? $class['original_timeSlot'] : $gio_bd;
+                                          
+                                          $isRegistered = in_array($lich_tap_id, $userClassIds);
+                                          // Xử lý trạng thái lớp (theo SQL: ENUM('Đang mở', 'Đã đầy', 'Hủy'))
+                                          $isFull = ($trang_thai === 'Đã đầy') || ($so_luong_da_dk >= $so_luong_toi_da);
+                                          // Chỉ cho phép đăng ký nếu có gói tập hợp lệ
+                                          $canBook = isset($_SESSION['user']) && $hasValidPackage && $trang_thai === 'Đang mở' && !$isRegistered && !$isFull;
+                                          
+                                          // Thêm margin-bottom cho các lịch tập sau lịch tập đầu tiên
+                                          if ($classIndex > 0) {
+                                              echo '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">';
+                                          }
+                                          
+                                          echo '<div class="text-sm font-bold text-primary">' . $timeDisplay;
+                                          if ($duration > 1) {
+                                              echo ' <span style="font-size: 10px; color: rgba(34, 197, 94, 0.7);">(' . $duration . 'h - ' . $timeDisplay . ')</span>';
+                                          }
+                                          echo '</div>';
+                                          echo '<div class="mt-1 font-semibold text-gray-900 dark:text-white">' . $ten_lop . '</div>';
+                                          echo '<div class="text-xs mt-1">' . $ten_hv . '</div>';
+                                          echo '<div class="flex items-center justify-center mt-2 text-xs">';
+                                          echo '<span class="material-symbols-outlined text-base mr-1">groups</span>' . $so_luong_da_dk . '/' . $so_luong_toi_da;
+                                          echo '</div>';
+                                          
+                                          $ngay_tap_class = $class['ngay_tap'];
+                                          $can_cancel_class = ($ngay_tap_class >= date('Y-m-d'));
+                                          $dang_ky_lich_id_for_class = isset($userRegistrationsMap[$lich_tap_id]) ? $userRegistrationsMap[$lich_tap_id] : null;
+                                          
+                                          if ($canBook) {
+                                              echo '<form method="POST" action="book_class.php" class="mt-2">';
+                                              echo '<input type="hidden" name="lich_tap_id" value="' . $lich_tap_id . '">';
+                                          echo '<button type="submit" class="w-full bg-primary text-white text-xs font-semibold py-1.5 px-3 rounded hover:bg-green-700 transition-colors"><i class="fas fa-plus-circle"></i> Đăng ký</button>';
+                                          echo '</form>';
+                                      } elseif ($isRegistered) {
+                                          echo '<div class="mt-2 space-y-1">';
+                                          echo '<button type="button" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold py-1.5 px-3 rounded cursor-default" disabled>';
+                                          echo '<i class="fas fa-check"></i> Đã đăng ký</button>';
+                                          
+                                          if ($can_cancel_class && $dang_ky_lich_id_for_class) {
+                                              // Nút Sửa (mở modal)
+                                              echo '<button type="button" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold py-1.5 px-3 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" onclick="openEditClassModal(' . $dang_ky_lich_id_for_class . ', ' . $lich_tap_id . ', ' . json_encode($ten_lop) . ')">';
+                                              echo '<i class="fas fa-edit"></i> Sửa</button>';
+                                              
+                                              // Nút Hủy
+                                              $confirmMsg2 = json_encode('Bạn có chắc chắn muốn hủy lớp này?');
+                                              echo '<form method="POST" action="cancel_class.php" onsubmit="return confirm(' . $confirmMsg2 . ');">';
+                                              echo '<input type="hidden" name="dang_ky_lich_id" value="' . (int)$dang_ky_lich_id_for_class . '">';
+                                              echo '<input type="hidden" name="lich_tap_id" value="' . (int)$lich_tap_id . '">';
+                                              echo '<button type="submit" class="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-semibold py-1.5 px-3 rounded hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">';
+                                              echo '<i class="fas fa-times"></i> Hủy</button>';
+                                              echo '</form>';
+                                          }
+                                          echo '</div>';
+                                      } elseif (!$hasValidPackage) {
+                                          // Nếu chưa chọn gói tập, hiển thị thông báo
+                                          echo '<div class="mt-2 text-xs text-center text-gray-500 dark:text-gray-400">';
+                                          echo '<i class="fas fa-info-circle"></i> Vui lòng chọn gói tập ở trên';
+                                          echo '</div>';
+                                      } elseif ($trang_thai === 'Đã đầy' || $isFull) {
+                                          echo '<button type="button" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 text-xs font-semibold py-1.5 px-3 rounded cursor-default opacity-50" disabled>';
+                                          echo '<i class="fas fa-times"></i> Đã đầy</button>';
+                                      } elseif ($trang_thai === 'Hủy') {
+                                          echo '<button type="button" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 text-xs font-semibold py-1.5 px-3 rounded cursor-default opacity-50" disabled>';
+                                          echo '<i class="fas fa-ban"></i> Đã hủy</button>';
+                                      } elseif ($trang_thai !== 'Đang mở') {
+                                          echo '<button type="button" class="w-full bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 text-xs font-semibold py-1.5 px-3 rounded cursor-default opacity-50" disabled>';
+                                          echo '<i class="fas fa-ban"></i> Đã đóng</button>';
+                                      }
+                                      
+                                      // Đóng div cho lịch tập thứ 2 trở đi (nếu có)
+                                      if ($classIndex > 0) {
+                                          echo '</div>';
+                                      }
+                                      } // Kết thúc foreach
+                                      
+                                      echo '</td>'; // Đóng td cell
+                                  } else {
+                                      // Kiểm tra xem ô này có bị span không
+                                      if (!isset($spannedCells[$cellKey])) {
+                                          // Ô trống bình thường
+                                          $borderClass = ($day < 7) ? 'border-r border-b' : 'border-b';
+                                          if ($timeSlot === '19:30 - 20:30') {
+                                              $borderClass = ($day < 7) ? 'border-r' : '';
+                                          }
+                                          echo '<td class="p-4 ' . $borderClass . ' border-gray-200 dark:border-gray-800 text-center text-gray-400">-</td>';
+                                      }
+                                      // Nếu bị span, không render gì (đã được xử lý ở timeSlot đầu tiên)
+                                  }
+                              }
+                              echo '</tr>';
+                          }
+                          
+                      } catch (Exception $e) {
+                          error_log("Schedule fetch error: " . $e->getMessage());
+                          // Fallback: hiển thị lịch rỗng nếu có lỗi
+                          echo '<!-- Error loading schedule: ' . htmlspecialchars($e->getMessage()) . ' -->';
+                          echo '<tr><td colspan="8" class="p-4 text-center text-gray-600 dark:text-gray-400">Không thể tải lịch tập. Vui lòng thử lại sau.</td></tr>';
+                      }
+                      ?>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <?php if (!isset($_SESSION['user'])): ?>
+             <div class="text-center mt-12">
+                <a href="../../index.html#dang-ky" class="bg-primary text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition-colors inline-block">Đăng ký hội viên để tham gia lớp</a>
+             </div>
+            <?php endif; ?>
+          </div>
+        </section>
+    </main>
+
+    <?php include __DIR__ . '/../includes/footer.php'; ?>
+    
+    <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+    <?php endif; ?>
+  </div> <!-- End page-wrapper --> 
+  
+  <!-- Modal đăng nhập/đăng ký đã được chuyển sang trang chủ (index.html) -->
+  <!-- Chỉ hiển thị ở trang chủ khi chưa đăng nhập để tránh trùng lặp -->
+
+  <!-- Account Modal được include từ account-modal.php -->
+
+  <!-- Modal Sửa Lịch Tập -->
+  <div class="modal-overlay" id="edit-class-modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <button class="modal-close-btn" onclick="closeEditClassModal()"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Chuyển sang lớp khác</h2>
+      </div>
+      <div class="modal-body" style="padding: 20px 30px;">
+        <p id="edit-class-current-info" style="margin-bottom: 20px; padding: 15px; background: var(--bg-2); border-radius: 8px;"></p>
+        <form method="POST" action="edit_class.php" id="edit-class-form">
+          <input type="hidden" name="dang_ky_lich_id" id="edit-dang-ky-lich-id">
+          <input type="hidden" name="lich_tap_id_cu" id="edit-lich-tap-id-cu">
+          
+          <div class="form-group">
+            <label for="edit-lich-tap-id-moi">Chọn lớp mới:</label>
+            <select id="edit-lich-tap-id-moi" name="lich_tap_id_moi" class="form-control" required>
+              <option value="">-- Chọn lớp mới --</option>
+              <?php
+              // Hiển thị danh sách lớp có thể chuyển sang (cùng tuần, còn chỗ, chưa đăng ký)
+              if (isset($_SESSION['user'])) {
+                  try {
+                      require_once __DIR__ . '/../../database/config.php';
+                      require_once __DIR__ . '/../../database/db_connect.php';
+                      
+                      $username = $_SESSION['user']['username'];
+                      $stmt = $pdo->prepare("SELECT khach_hang_id FROM KhachHang WHERE ten_dang_nhap = :username LIMIT 1");
+                      $stmt->execute([':username' => $username]);
+                      $khachHang = $stmt->fetch();
+                      
+                      if ($khachHang) {
+                          $khach_hang_id = $khachHang['khach_hang_id'];
+                          
+                          // Tính tuần hiện tại (khớp với MySQL)
+                          $stmt_date_modal = $pdo->query("SELECT 
+                              CASE 
+                                  WHEN DAYOFWEEK(CURDATE()) = 1 THEN DATE_ADD(CURDATE(), INTERVAL 1 DAY)
+                                  ELSE DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 2) DAY)
+                              END as monday,
+                              CASE 
+                                  WHEN DAYOFWEEK(CURDATE()) = 1 THEN DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                                  ELSE DATE_ADD(DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 2) DAY), INTERVAL 6 DAY)
+                              END as sunday");
+                          $weekDatesModal = $stmt_date_modal->fetch();
+                          
+                          $startDate = $weekDatesModal['monday'];
+                          $endDate = $weekDatesModal['sunday'];
+                          
+                          // Lấy các lớp trong tuần, còn chỗ, chưa đăng ký bởi user này
+                          // Query này tự động cập nhật khi admin thay đổi lịch tập
+                          $stmt = $pdo->prepare("SELECT lt.lich_tap_id, lt.ten_lop, lt.ngay_tap, lt.gio_bat_dau, lt.gio_ket_thuc, 
+                                                       lt.so_luong_toi_da, lt.phong, nv.ho_ten as ten_hv,
+                                                       COUNT(CASE WHEN dk.trang_thai = 'Đã đăng ký' THEN 1 END) as so_luong_da_dk
+                                                FROM LichTap lt
+                                                LEFT JOIN nhanvien nv ON lt.nhan_vien_pt_id = nv.nhan_vien_id
+                                                LEFT JOIN DangKyLichTap dk ON lt.lich_tap_id = dk.lich_tap_id
+                                                LEFT JOIN DangKyLichTap user_dk ON lt.lich_tap_id = user_dk.lich_tap_id 
+                                                    AND user_dk.khach_hang_id = :kh_id 
+                                                    AND user_dk.trang_thai = 'Đã đăng ký'
+                                                WHERE lt.ngay_tap >= :start_date 
+                                                AND lt.ngay_tap <= :end_date
+                                                AND lt.trang_thai = 'Đang mở'
+                                                AND user_dk.dang_ky_lich_id IS NULL
+                                                GROUP BY lt.lich_tap_id
+                                                HAVING so_luong_da_dk < lt.so_luong_toi_da
+                                                ORDER BY lt.ngay_tap ASC, lt.gio_bat_dau ASC");
+                          $stmt->execute([
+                              ':kh_id' => $khach_hang_id,
+                              ':start_date' => $startDate,
+                              ':end_date' => $endDate
+                          ]);
+                          $availableClasses = $stmt->fetchAll();
+                          
+                          foreach ($availableClasses as $cls) {
+                              $cls_id = $cls['lich_tap_id'];
+                              $cls_name = htmlspecialchars($cls['ten_lop']);
+                              $cls_date = date('d/m/Y', strtotime($cls['ngay_tap']));
+                              $cls_time = substr($cls['gio_bat_dau'], 0, 5) . ' - ' . substr($cls['gio_ket_thuc'], 0, 5);
+                              $dayOfWeek = date('N', strtotime($cls['ngay_tap'])); // 1=Monday, 7=Sunday
+                              $dayNames = ['', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+                              $cls_day = $dayNames[$dayOfWeek];
+                              $cls_hv = htmlspecialchars($cls['ten_hv'] ?? 'Chưa có');
+                              $cls_room = htmlspecialchars($cls['phong'] ?? '');
+                              
+                              echo '<option value="' . $cls_id . '">';
+                              echo $cls_day . ' ' . $cls_date . ' | ' . $cls_time . ' | ' . $cls_name;
+                              if ($cls_room) echo ' | ' . $cls_room;
+                              if ($cls_hv !== 'Chưa có') echo ' | ' . $cls_hv;
+                              echo '</option>';
+                          }
+                      }
+                  } catch (Exception $e) {
+                      error_log("Error loading classes for edit modal: " . $e->getMessage());
+                  }
+              }
+              ?>
+            </select>
+            <small style="color: var(--muted); font-size: 12px; margin-top: 5px; display: block;">
+              Chọn lớp mới bạn muốn chuyển sang. Chỉ hiển thị các lớp còn chỗ và chưa đăng ký.
+            </small>
+          </div>
+          
+          <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn" style="flex: 1;">Chuyển lớp</button>
+            <button type="button" class="btn ghost" onclick="closeEditClassModal()" style="flex: 1;">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../assets/js/auth.js?v=6"></script>
+  
+  <!-- Navigation Script - Phải load trước các script khác -->
+  <script src="../../assets/js/navigation.js?v=3"></script>
+  
+  <!-- Schedule Page Script - Phải load trước user-menu và account-modal -->
+  <script src="../../assets/js/scroll-fix.js?v=1"></script>
+  <script src="../../assets/js/schedule.js?v=3"></script>
+  
+  <script src="../../assets/js/user-menu.js?v=4"></script>
+  
+  <!-- Simple Modals - thay thế account-modal phức tạp -->
+  <?php include __DIR__ . '/../includes/simple-modals.php'; ?>
+  
+  <!-- Inbox Modal - được include từ simple-modals.php nhưng cần thêm vào đây để đảm bảo hoạt động -->
+  <div class="modal-overlay hidden" id="inbox-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" id="inbox-modal-close" onclick="if(typeof closeInboxModal === 'function') closeInboxModal(); else document.getElementById('inbox-modal').classList.remove('active'); return false;"><i class="fas fa-times"></i></button>
+      
+      <div class="modal-header">
+        <a href="../../index.html" class="brand">
+          <img src="../../assets/img/logo.png" alt="Logo">
+          <span><i class="fas fa-inbox"></i> Hòm thư</span>
+        </a>
+        <button id="mark-all-read-btn" onclick="if(typeof markAllInboxAsRead === 'function') markAllInboxAsRead();" 
+                title="Đánh dấu tất cả đã đọc"
+                class="mark-all-read-btn">
+          <i class="fas fa-check-double"></i>
+          <span class="mark-all-read-text">Đã đọc tất cả</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <p class="muted center">
+          Xem thông báo, phản hồi hỗ trợ và cập nhật từ DFC Gym
+        </p>
+
+        <div class="inbox-stats">
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-total-count">0</div>
+            <div class="stat-label">Tổng số thông báo</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="inbox-unread-count">0</div>
+            <div class="stat-label">Chưa đọc</div>
+          </div>
+        </div>
+
+        <div id="inbox-notifications-list">
+          <div class="empty-inbox">
+            <i class="fas fa-inbox"></i>
+            <p>Bạn chưa có thông báo nào</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Inbox Modal Script -->
+  <script src="../../assets/js/inbox-modal-v2.js?v=1"></script>
+  
+  <!-- Modals Loader Script - Load dữ liệu vào các modal -->
+  <script src="../../assets/js/modals-loader.js?v=3"></script>
+
+  <!-- Modal Hủy Gói Tập -->
+  <div class="modal-overlay hidden" id="cancel-package-modal">
+    <div class="modal-content">
+      <button class="modal-close-btn" onclick="closeCancelPackageModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <div class="modal-header">
+        <div>
+          <div>
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div>
+            <h2>Xác nhận hủy gói tập</h2>
+            <p>Hành động này không thể hoàn tác</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <div>
+          <div>
+            <i class="fas fa-box"></i>
+            <h3 id="cancel-package-name">Gói tập</h3>
+          </div>
+          <div>
+            <p><strong>Tiền hoàn lại:</strong> <span id="cancel-package-refund">0₫</span></p>
+            <p><strong>Đã sử dụng:</strong> <span id="cancel-package-used">0</span>/<span id="cancel-package-total">0</span> ngày</p>
+          </div>
+      </div>
+      
+        <form method="POST" action="../goitap/cancel_package.php" id="cancel-package-form">
+          <input type="hidden" name="dang_ky_id" id="cancel-dang-ky-id">
+          
+          <div class="form-group">
+            <label for="cancel-reason">Lý do hủy (Tùy chọn)</label>
+            <textarea id="cancel-reason" name="ly_do" rows="3" placeholder="Nhập lý do hủy gói tập (nếu có)"></textarea>
+        </div>
+
+          <div>
+            <button type="submit" class="btn">Xác nhận hủy</button>
+            <button type="button" class="btn ghost" onclick="closeCancelPackageModal()">Hủy</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script src="../../assets/js/cancel-package.js?v=4"></script>
+  
+  <script>
+  // Hàm chọn gói tập để xem lịch tập - Không reload trang
+  function selectPackage(packageId) {
+      if (!packageId) {
+          console.error('Package ID is required');
+          return;
+      }
+      
+      // Cập nhật URL mà không reload trang
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set('package_id', packageId);
+      window.history.pushState({package_id: packageId}, '', currentUrl.toString());
+      
+      // Tìm phần schedule table để reload
+      const scheduleTable = document.getElementById('schedule-table-content');
+      if (!scheduleTable) {
+          console.error('Schedule table not found');
+          return;
+      }
+      
+      // Hiển thị loading
+      const originalContent = scheduleTable.innerHTML;
+      scheduleTable.innerHTML = '<div class="col-span-8 p-8 text-center"><i class="fas fa-spinner fa-spin" style="font-size: 32px; color: var(--primary);"></i><p class="mt-4 text-gray-500">Đang tải lịch tập...</p></div>';
+      
+      // Fetch lại phần schedule với package_id mới
+      fetch('load_schedule.php?package_id=' + packageId)
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.text();
+          })
+          .then(html => {
+              // Thay thế nội dung schedule table
+              scheduleTable.innerHTML = html;
+              
+              // Highlight gói tập được chọn
+              highlightSelectedPackage(packageId);
+          })
+          .catch(error => {
+              console.error('Error loading schedule:', error);
+              // Nếu có lỗi, khôi phục nội dung cũ
+              scheduleTable.innerHTML = originalContent;
+              alert('Có lỗi xảy ra khi tải lịch tập. Vui lòng thử lại.');
+          });
+  }
+  
+  // Hàm highlight gói tập được chọn
+  function highlightSelectedPackage(packageId) {
+      // Remove highlight từ tất cả các gói
+      document.querySelectorAll('[onclick*="selectPackage"]').forEach(el => {
+          const parent = el.closest('div[style*="border-left"]');
+          if (parent) {
+              parent.style.borderLeft = '4px solid transparent';
+              const badge = parent.querySelector('.status-active');
+              if (badge && badge.textContent === 'Đang chọn') {
+                  badge.remove();
+              }
+          }
+      });
+      
+      // Highlight gói được chọn - tìm element có onclick chứa packageId
+      const selectedElements = document.querySelectorAll(`[onclick*="selectPackage(${packageId})"]`);
+      selectedElements.forEach(el => {
+          const parent = el.closest('div[style*="border-left"]');
+          if (parent) {
+              parent.style.borderLeft = '4px solid var(--primary)';
+              // Thêm badge "Đang chọn" nếu chưa có
+              const strong = parent.querySelector('strong');
+              if (strong && !strong.querySelector('.status-active')) {
+                  const badge = document.createElement('span');
+                  badge.className = 'status-active';
+                  badge.style.cssText = 'padding: 3px 10px; border-radius: 12px; font-size: 12px; margin-left: 8px;';
+                  badge.textContent = 'Đang chọn';
+                  strong.appendChild(badge);
+              }
+          }
+      });
+  }
+  </script>
+  
+  <!-- Mobile Menu Script -->
+  <?php if (isset($_SESSION['user'])): ?>
+    <script src="../../assets/js/mobile-menu.js?v=1"></script>
+  <?php endif; ?>
+  
+  <?php if (isset($_SESSION['user'])): ?>
+    </div> <!-- End lg:pt-20 wrapper -->
+  <?php endif; ?>
+  </div> <!-- End page-wrapper -->
+</body>
+</html>
